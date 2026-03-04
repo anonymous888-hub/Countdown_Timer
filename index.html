@@ -432,21 +432,24 @@
         }
 
         function pauseTimer() {
+            // หยุดนิ่ง ณ เวลาปัจจุบัน
             clearInterval(countdownInterval);
             countdownInterval = null;
             isRunning = false;
             updateDisplay();
         }
 
-        function resetTimer() {
+        function stopTimer() {
+            // หยุด + กลับไปค่าที่ set_ ไว้ล่าสุด (defaultTime)
             pauseTimer();
-            timeLeft = defaultTime;
+            timeLeft = defaultTime; 
             updateDisplay();
         }
 
-        function stopTimer() {
+        function resetTimer() {
+            // หยุด + ไปเป็น 00:00
             pauseTimer();
-            timeLeft = defaultTime;
+            timeLeft = 0; 
             updateDisplay();
         }
 
