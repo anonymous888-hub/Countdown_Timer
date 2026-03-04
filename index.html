@@ -62,7 +62,7 @@
         /* Timer Display */
         #timer {
             font-family: 'Bebas Neue', sans-serif;
-            font-size: clamp(180px, 32vw, 420px);
+            font-size: clamp(160px, 42vw, 600px);
             line-height: 0.9;
             color: var(--clr-white);
             letter-spacing: 0.02em;
@@ -226,7 +226,20 @@
         .set-time input:focus { border-color: rgba(255,255,255,0.4); color: #fff; }
         .set-time span { font-size: 11px; color: rgba(255,255,255,0.2); letter-spacing: 0.2em; }
 
-        /* Current Clock */
+        /* Tablet responsive */
+        @media (max-width: 1024px) {
+            #timer { font-size: clamp(140px, 44vw, 480px); }
+            .current-clock { bottom: 20px; }
+            #clockDisplay { font-size: 40px; }
+            .controls { gap: 10px; }
+            button { padding: 8px 18px; font-size: 11px; }
+            .company-logo img { height: 36px; }
+        }
+        @media (max-width: 768px) {
+            #timer { font-size: clamp(100px, 46vw, 360px); }
+            #clockDisplay { font-size: 32px; }
+            .wrapper { gap: 12px; }
+        }
         .current-clock {
             position: fixed;
             bottom: 32px;
