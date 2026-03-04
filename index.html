@@ -376,9 +376,13 @@
         function updateDisplay() {
             const isNeg   = timeLeft < 0;
             const absTime = Math.abs(timeLeft);
-            const mm      = Math.floor(absTime / 60).toString().padStart(2, '0');
+            const hh      = Math.floor(absTime / 3600);
+            const mm      = Math.floor((absTime % 3600) / 60).toString().padStart(2, '0');
             const ss      = (absTime % 60).toString().padStart(2, '0');
-            timerEl.textContent = (isNeg ? '-' : '') + mm + ':' + ss;
+            const prefix  = isNeg ? '-' : '';
+            timerEl.textContent = hh > 0
+                ? prefix + hh + ':' + mm + ':' + ss
+                : prefix + mm + ':' + ss;
 
             // Color state
             timerEl.classList.remove('warning', 'critical');
