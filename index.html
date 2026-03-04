@@ -443,6 +443,12 @@
 
         function resetTimer() {
             pauseTimer();
+            timeLeft = 0;
+            updateDisplay();
+        }
+
+        function stopTimer() {
+            pauseTimer();
             timeLeft = defaultTime;
             updateDisplay();
         }
@@ -451,6 +457,7 @@
             if (cmd === 'start') startTimer();
             if (cmd === 'pause') pauseTimer();
             if (cmd === 'reset') resetTimer();
+            if (cmd === 'stop')  stopTimer();
 
             // Sync to Firebase if connected
             try {
@@ -494,6 +501,8 @@
                     pauseTimer();
                 } else if (cmd === 'reset') {
                     resetTimer();
+                } else if (cmd === 'stop') {
+                    stopTimer();
                 } else if (cmd.startsWith('set_')) {
                     // ตั้งเวลาใหม่ เช่น set_3600 = 1 ชั่วโมง
                     const seconds = parseInt(cmd.split('_')[1]);
