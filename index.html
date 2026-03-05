@@ -212,30 +212,30 @@
             pointer-events:none;
         "></div>
 
-        <div style="position:relative; text-align:center; width:320px; max-width:90vw;">
+        <div style="position:relative; text-align:center; width:360px; max-width:92vw;">
             <div style="
                 font-family:'Bebas Neue',sans-serif;
-                font-size:clamp(36px,10vw,56px);
+                font-size:clamp(52px,12vw,80px);
                 letter-spacing:0.14em; color:#f0f0f0;
                 line-height:1; margin-bottom:6px;
             ">TIMER</div>
             <div style="
-                font-size:10px; letter-spacing:0.45em;
+                font-size:13px; letter-spacing:0.45em;
                 color:rgba(255,255,255,0.2);
-                text-transform:uppercase; margin-bottom:40px;
+                text-transform:uppercase; margin-bottom:44px;
             ">CONTROL SYSTEM</div>
 
             <!-- Email -->
             <div style="margin-bottom:20px; text-align:left;">
-                <div style="font-size:9px; letter-spacing:0.3em; color:rgba(255,255,255,0.25); text-transform:uppercase; margin-bottom:8px;">EMAIL</div>
+                <div style="font-size:11px; letter-spacing:0.3em; color:rgba(255,255,255,0.28); text-transform:uppercase; margin-bottom:10px;">EMAIL</div>
                 <input id="authEmail" type="email" placeholder="user@example.com"
                     autocomplete="username"
                     style="
                         width:100%; background:transparent; border:none;
                         border-bottom:1px solid rgba(255,255,255,0.2);
                         color:#f0f0f0; font-family:'Share Tech Mono',monospace;
-                        font-size:15px; letter-spacing:0.08em;
-                        padding:8px 0; outline:none; transition:border-color 0.2s;
+                        font-size:18px; letter-spacing:0.08em;
+                        padding:10px 0; outline:none; transition:border-color 0.2s;
                     "
                     onfocus="this.style.borderBottomColor='rgba(255,255,255,0.5)'"
                     onblur="this.style.borderBottomColor='rgba(255,255,255,0.2)'"
@@ -246,15 +246,15 @@
 
             <!-- Password -->
             <div style="margin-bottom:12px; text-align:left;">
-                <div style="font-size:9px; letter-spacing:0.3em; color:rgba(255,255,255,0.25); text-transform:uppercase; margin-bottom:8px;">PASSWORD</div>
+                <div style="font-size:11px; letter-spacing:0.3em; color:rgba(255,255,255,0.28); text-transform:uppercase; margin-bottom:10px;">PASSWORD</div>
                 <input id="authPass" type="password" placeholder="••••••••"
                     autocomplete="current-password"
                     style="
                         width:100%; background:transparent; border:none;
                         border-bottom:1px solid rgba(255,255,255,0.2);
                         color:#f0f0f0; font-family:'Share Tech Mono',monospace;
-                        font-size:20px; letter-spacing:0.2em;
-                        padding:8px 0; outline:none; transition:border-color 0.2s;
+                        font-size:26px; letter-spacing:0.2em;
+                        padding:10px 0; outline:none; transition:border-color 0.2s;
                     "
                     onfocus="this.style.borderBottomColor='rgba(255,255,255,0.5)'"
                     onblur="this.style.borderBottomColor='rgba(255,255,255,0.2)'"
@@ -265,9 +265,9 @@
 
             <!-- Error -->
             <div id="authError" style="
-                font-size:10px; letter-spacing:0.25em;
-                color:rgba(255,32,32,0.75); text-transform:uppercase;
-                min-height:18px; margin-bottom:24px;
+                font-size:12px; letter-spacing:0.2em;
+                color:rgba(255,32,32,0.8); text-transform:uppercase;
+                min-height:20px; margin-bottom:26px;
                 transition:opacity 0.3s; opacity:0; text-align:left;
             "></div>
 
@@ -277,7 +277,7 @@
                 border:1px solid rgba(255,255,255,0.2);
                 color:rgba(255,255,255,0.6);
                 font-family:'Share Tech Mono',monospace;
-                font-size:11px; letter-spacing:0.4em;
+                font-size:13px; letter-spacing:0.4em;
                 text-transform:uppercase; padding:14px;
                 cursor:pointer; border-radius:2px; transition:all 0.2s;
             "
@@ -286,7 +286,7 @@
             >SIGN IN</button>
 
             <div style="
-                margin-top:22px; font-size:9px; letter-spacing:0.22em;
+                margin-top:26px; font-size:11px; letter-spacing:0.22em;
                 color:rgba(255,255,255,0.1); text-transform:uppercase;
             ">ระบบรักษาความปลอดภัยด้วย Firebase Auth</div>
         </div>
@@ -411,8 +411,13 @@
         //  FIREBASE CONFIG — ใส่ค่าของคุณที่นี่
         // ══════════════════════════════════════════
         const firebaseConfig = {
-            databaseURL: "https://companion-timer-default-rtdb.asia-southeast1.firebasedatabase.app/"
-            // เช่น: "https://my-timer-default-rtdb.asia-southeast1.firebasedatabase.app"
+            apiKey:            "AIzaSyCNYZ59j-xj_JGU3erli9nc-vRDvOKfd7o",
+            authDomain:        "companion-timer.firebaseapp.com",
+            databaseURL:       "https://companion-timer-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId:         "companion-timer",
+            storageBucket:     "companion-timer.firebasestorage.app",
+            messagingSenderId: "635614245273",
+            appId:             "1:635614245273:web:336d48f4a5ba4e2621e308"
         };
 
         // ══════════════════════════════════════════
