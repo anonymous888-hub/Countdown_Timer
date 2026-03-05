@@ -592,15 +592,22 @@
                         timeLeft    = seconds;
                         updateDisplay();
                     }
-                } else if (cmd.startsWith('add_')) {
-                    // เพิ่มเวลา เช่น add_300 = +5 นาที
-                    const seconds = parseInt(cmd.split('_')[1]);
-                    if (!isNaN(seconds)) {
-                        timeLeft    += seconds;
-                        defaultTime  = Math.max(defaultTime, timeLeft);
-                        updateDisplay();
-                    }
-                }
+               } else if (cmd.startsWith('add_')) {
+    // เพิ่มเวลา เช่น add_300 = +5 นาที
+    const seconds = parseInt(cmd.split('_')[1]);
+    if (!isNaN(seconds)) {
+        timeLeft    += seconds;
+        defaultTime  = Math.max(defaultTime, timeLeft);
+        updateDisplay();
+    }
+} else if (cmd.startsWith('sub_')) {
+    // ลดเวลา เช่น sub_300_10:44:56 = -5 นาที (ส่วน timestamp หลัง _ ที่ 2 ใช้แค่ให้ค่า unique)
+    const seconds = parseInt(cmd.split('_')[1]);
+    if (!isNaN(seconds)) {
+        timeLeft -= seconds;
+        updateDisplay();
+    }
+}
             });
 
         } catch(e) {
