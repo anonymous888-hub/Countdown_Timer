@@ -156,6 +156,23 @@
         .login-btn:hover { background: rgba(126,232,250,0.18); border-color: #7ee8fa; }
         .login-btn:active { transform: scale(0.98); }
 
+        /* Fullscreen button */
+        #fsBtn {
+            position: fixed; bottom: 24px; right: 24px; z-index: 50;
+            width: 44px; height: 44px; border-radius: 10px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.14);
+            color: rgba(255,255,255,0.35);
+            font-size: 18px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s; backdrop-filter: blur(6px);
+        }
+        #fsBtn:hover {
+            background: rgba(126,232,250,0.12);
+            border-color: rgba(126,232,250,0.45);
+            color: #7ee8fa;
+        }
+
         @media (max-width: 900px) {
             .mascot-wrap { width: 42px; height: 42px; }
             .brand-name { font-size: 14px; }
@@ -284,6 +301,9 @@
     <div id="clockDisplay">00:00:00</div>
     <div class="clock-date" id="clockDate"></div>
 </div>
+
+<!-- Fullscreen button -->
+<button id="fsBtn" onclick="toggleFullscreen()" title="เต็มจอ">⛶</button>
 
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -513,6 +533,24 @@ function updateClock() {
 updateClock();
 setInterval(updateClock, 1000);
 updateDisplay();
+
+/* ═══ FULLSCREEN ═══ */
+var fsBtn = document.getElementById('fsBtn');
+
+function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(function(err) {
+            console.warn('Fullscreen error:', err);
+        });
+    } else {
+        document.exitFullscreen();
+    }
+}
+
+document.addEventListener('fullscreenchange', function() {
+    fsBtn.textContent = document.fullscreenElement ? '✕' : '⛶';
+    fsBtn.title = document.fullscreenElement ? 'ออกจากเต็มจอ' : 'เต็มจอ';
+});
 </script>
 </body>
 </html>
