@@ -426,8 +426,6 @@ function applyCommand(cmd) {
     }
 }
 
-var isLocalAction = false;
-
 // AUTH
 function loginEmail_pw() {
     var email = (document.getElementById('loginEmail').value || '').trim();
@@ -475,10 +473,29 @@ firebase.auth().onAuthStateChanged(function(user) {
     }
 });
 
-// Firebase command listener — guard auth + isLocalAction
+// ── Read full timer state first (sync on connect) ──
+database.ref('timer/state').on('value', function(snap) {
+    if (!firebase.auth().currentUser) return;
+    var st = snap.val();
+    if (!st) return;
+    // Restore state from Firebase
+    if (typeof st.defaultTime === 'number' && st.defaultTime > 0) defaultTime = st.defaultTime;
+    if (typeof st.timeLeft   === 'number') timeLeft = st.timeLeft;
+    if (typeof st.isRunning  === 'boolean') {
+        if (st.isRunning && !countdownInterval) {
+            isRunning = true;
+            countdownInterval = setInterval(function(){ timeLeft -= 1; updateDisplay(); }, 1000);
+        } else if (!st.isRunning && countdownInterval) {
+            clearInterval(countdownInterval); countdownInterval = null;
+            isRunning = false;
+        }
+    }
+    updateDisplay();
+});
+
+// Firebase command listener — guard auth
 database.ref('timer/command').on('value', function(snap) {
     if (!firebase.auth().currentUser) return;
-    if (isLocalAction) return;
     applyCommand(snap.val());
 });
 
