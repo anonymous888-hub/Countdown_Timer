@@ -2,8 +2,8 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>Countdown Timer</title>
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <title>Timer by Kaekung</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Share+Tech+Mono&family=Kanit:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --clr-white: #f0f0f0;
@@ -11,6 +11,8 @@
             --clr-orange: #FF8C00;
             --clr-red: #FF2020;
             --clr-red-dark: #CC0000;
+            --clr-accent: #7ee8fa;
+            --clr-pink: #ff80ab;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -23,7 +25,7 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            padding: 70px 20px 70px;
+            padding: 80px 20px 80px;
             overflow-x: hidden;
             overflow-y: hidden;
             font-family: 'Share Tech Mono', monospace;
@@ -53,7 +55,6 @@
             width: 100%;
         }
 
-        /* Label */
         .label {
             font-family: 'Share Tech Mono', monospace;
             font-size: 22px;
@@ -63,7 +64,6 @@
             transition: color 1s;
         }
 
-        /* Timer Display */
         #timer {
             font-family: 'Bebas Neue', sans-serif;
             font-size: clamp(100px, min(42vw, 55vh), 560px);
@@ -76,17 +76,12 @@
             user-select: none;
         }
 
-        /* State: WARNING (yellow) */
         #timer.warning {
             color: var(--clr-yellow);
-            text-shadow: none;
             animation: pulse-yellow 1s ease-in-out infinite;
         }
-
-        /* State: CRITICAL (red) */
         #timer.critical {
             color: var(--clr-red);
-            text-shadow: none;
             animation: pulse-red 0.6s ease-in-out infinite;
         }
 
@@ -94,13 +89,11 @@
             0%, 100% { opacity: 1; }
             50%       { opacity: 0.75; }
         }
-
         @keyframes pulse-red {
             0%, 100% { opacity: 1; }
             50%       { opacity: 0.6; }
         }
 
-        /* Progress bar */
         .progress-track {
             width: min(600px, 80vw);
             height: 3px;
@@ -116,7 +109,6 @@
             transition: transform 1s linear, background 0.5s;
         }
 
-        /* Status line */
         .status {
             font-family: 'Share Tech Mono', monospace;
             font-size: 14px;
@@ -126,7 +118,7 @@
             transition: color 0.5s;
         }
 
-        /* ── Firebase Status Badge ── */
+        /* Firebase Status */
         .firebase-status {
             position: fixed;
             top: 18px;
@@ -138,53 +130,68 @@
             gap: 4px;
             font-family: 'Share Tech Mono', monospace;
         }
-        .firebase-status .row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.2);
-        }
+        .firebase-status .row { display: flex; align-items: center; gap: 8px; }
+        .dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.2); }
         .dot.connected { background: #00ff88; box-shadow: 0 0 6px #00ff88; }
         .dot.error     { background: #ff4040; box-shadow: 0 0 6px #ff4040; }
-        #fbLabel {
-            font-size: 10px;
-            letter-spacing: 0.35em;
-            color: rgba(255,255,255,0.25);
-            text-transform: uppercase;
-        }
-        #userEmail {
-            font-size: 9px;
-            letter-spacing: 0.1em;
-            color: rgba(255,255,255,0.15);
-            max-width: 160px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
+        #fbLabel { font-size: 10px; letter-spacing: 0.35em; color: rgba(255,255,255,0.25); text-transform: uppercase; }
+        #userEmail { font-size: 9px; letter-spacing: 0.1em; color: rgba(255,255,255,0.15); max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         #logoutBtn {
             font-family: 'Share Tech Mono', monospace;
-            font-size: 9px;
-            letter-spacing: 0.25em;
-            text-transform: uppercase;
-            background: transparent;
-            border: 1px solid rgba(255,255,255,0.12);
-            color: rgba(255,255,255,0.25);
-            padding: 3px 8px;
-            border-radius: 2px;
-            cursor: pointer;
-            transition: all 0.2s;
+            font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase;
+            background: transparent; border: 1px solid rgba(255,255,255,0.12);
+            color: rgba(255,255,255,0.25); padding: 3px 8px; border-radius: 2px;
+            cursor: pointer; transition: all 0.2s;
         }
-        #logoutBtn:hover {
-            border-color: rgba(255,80,80,0.5);
-            color: rgba(255,80,80,0.8);
+        #logoutBtn:hover { border-color: rgba(255,80,80,0.5); color: rgba(255,80,80,0.8); }
+
+        /* Kaekung Brand Badge */
+        .kaekung-brand {
+            position: fixed;
+            top: 16px;
+            left: 20px;
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
-        /* ── Current Clock ── */
+        .mascot-wrap {
+            width: 54px;
+            height: 54px;
+            flex-shrink: 0;
+            animation: mascot-float 3s ease-in-out infinite;
+            filter: drop-shadow(0 0 8px rgba(126,232,250,0.4));
+        }
+        @keyframes mascot-float {
+            0%,100% { transform: translateY(0); }
+            50%      { transform: translateY(-5px); }
+        }
+
+        .brand-text {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.15;
+        }
+        .brand-text .by-line {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 9px;
+            letter-spacing: 0.4em;
+            color: rgba(255,255,255,0.22);
+            text-transform: uppercase;
+        }
+        .brand-text .name-line {
+            font-family: 'Kanit', sans-serif;
+            font-weight: 700;
+            font-size: 17px;
+            letter-spacing: 0.08em;
+            background: linear-gradient(90deg, #7ee8fa 0%, #ff80ab 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Current Clock */
         .current-clock {
             position: fixed;
             bottom: 24px;
@@ -195,42 +202,16 @@
             gap: 2px;
             z-index: 20;
         }
-        .clock-label {
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 10px;
-            letter-spacing: 0.35em;
-            color: rgba(255,255,255,0.2);
-            text-transform: uppercase;
-        }
-        #clockDisplay {
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 52px;
-            color: rgba(255,255,255,0.55);
-            letter-spacing: 0.06em;
-            line-height: 1;
-            -webkit-font-smoothing: antialiased;
-        }
-        .clock-date {
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 11px;
-            letter-spacing: 0.3em;
-            color: rgba(255,255,255,0.18);
-        }
+        .clock-label { font-family: 'Share Tech Mono', monospace; font-size: 10px; letter-spacing: 0.35em; color: rgba(255,255,255,0.2); text-transform: uppercase; }
+        #clockDisplay { font-family: 'Bebas Neue', sans-serif; font-size: 52px; color: rgba(255,255,255,0.55); letter-spacing: 0.06em; line-height: 1; -webkit-font-smoothing: antialiased; }
+        .clock-date { font-family: 'Share Tech Mono', monospace; font-size: 11px; letter-spacing: 0.3em; color: rgba(255,255,255,0.18); }
 
-        /* ── Company Logo ── */
-        .company-logo {
-            position: fixed;
-            top: 20px;
-            left: 24px;
-            z-index: 50;
-        }
-        .company-logo img { height: 56px; }
-
-        /* ── Responsive ── */
+        /* Responsive */
         @media (max-width: 900px) {
             .current-clock { bottom: 16px; left: 20px; }
             #clockDisplay { font-size: 36px; }
-            .company-logo img { height: 36px; }
+            .mascot-wrap { width: 42px; height: 42px; }
+            .brand-text .name-line { font-size: 14px; }
         }
         @media (max-width: 768px) {
             body { padding: 60px 12px 90px; }
@@ -250,112 +231,139 @@
             #clockDisplay { font-size: 22px; }
             .label { display: none; }
         }
+
+        /* Star particles */
+        .star {
+            position: fixed;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+            animation: twinkle linear infinite;
+        }
+        @keyframes twinkle {
+            0%,100% { opacity: 0.04; transform: scale(1); }
+            50%      { opacity: 0.22; transform: scale(1.4); }
+        }
     </style>
 </head>
 <body>
 
-    <!-- ════════════════════════════════════════
-         FIREBASE AUTH LOGIN OVERLAY
-    ════════════════════════════════════════ -->
-    <div id="loginOverlay" style="
-        position:fixed; inset:0; z-index:9999;
-        background:#000;
-        display:flex; flex-direction:column;
-        align-items:center; justify-content:center;
-        font-family:'Share Tech Mono',monospace;
-    ">
-        <div style="
-            position:absolute; width:500px; height:260px;
-            border-radius:50%; filter:blur(100px);
-            opacity:0.1; background:#f0f0f0;
-            pointer-events:none;
-        "></div>
+    <!-- Star particles -->
+    <script>
+        (function(){
+            for(var i=0;i<40;i++){
+                var s=document.createElement('div');
+                s.className='star';
+                var sz=Math.random()*2+1;
+                s.style.cssText='width:'+sz+'px;height:'+sz+'px;left:'+(Math.random()*100)+'vw;top:'+(Math.random()*100)+'vh;background:#fff;animation-duration:'+(2+Math.random()*4)+'s;animation-delay:'+(Math.random()*4)+'s;';
+                document.body.appendChild(s);
+            }
+        })();
+    </script>
 
-        <div style="position:relative; text-align:center; width:360px; max-width:92vw;">
-            <div style="
-                font-family:'Bebas Neue',sans-serif;
-                font-size:clamp(52px,12vw,80px);
-                letter-spacing:0.14em; color:#f0f0f0;
-                line-height:1; margin-bottom:6px;
-            ">TIMER</div>
-            <div style="
-                font-size:13px; letter-spacing:0.45em;
-                color:rgba(255,255,255,0.2);
-                text-transform:uppercase; margin-bottom:44px;
-            ">CONTROL SYSTEM</div>
+    <!-- LOGIN OVERLAY -->
+    <div id="loginOverlay" style="position:fixed;inset:0;z-index:9999;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Share Tech Mono',monospace;">
+        <div style="position:absolute;width:500px;height:260px;border-radius:50%;filter:blur(100px);opacity:0.1;background:#7ee8fa;pointer-events:none;"></div>
 
-            <!-- Email -->
-            <div style="margin-bottom:20px; text-align:left;">
-                <div style="font-size:11px; letter-spacing:0.3em; color:rgba(255,255,255,0.28); text-transform:uppercase; margin-bottom:10px;">EMAIL</div>
-                <input id="authEmail" type="email" placeholder="user@example.com"
-                    autocomplete="username"
-                    style="
-                        width:100%; background:transparent; border:none;
-                        border-bottom:1px solid rgba(255,255,255,0.2);
-                        color:#f0f0f0; font-family:'Share Tech Mono',monospace;
-                        font-size:18px; letter-spacing:0.08em;
-                        padding:10px 0; outline:none; transition:border-color 0.2s;
-                    "
-                    onfocus="this.style.borderBottomColor='rgba(255,255,255,0.5)'"
+        <!-- mascot on login screen -->
+        <div style="margin-bottom:16px;animation:mascot-float 3s ease-in-out infinite;filter:drop-shadow(0 0 12px rgba(126,232,250,0.4));">
+            <svg width="80" height="80" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="50" cy="63" rx="27" ry="23" fill="#7ee8fa" opacity="0.85"/>
+                <circle cx="50" cy="39" r="25" fill="#ffe0b2"/>
+                <polygon points="25,19 19,5 35,14" fill="#ff80ab"/>
+                <polygon points="75,19 81,5 65,14" fill="#ff80ab"/>
+                <polygon points="26,18 21,8 34,14" fill="#ffcdd2"/>
+                <polygon points="74,18 79,8 66,14" fill="#ffcdd2"/>
+                <path d="M34,37 Q40,32 46,37" stroke="#1a1a2e" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                <path d="M54,37 Q60,32 66,37" stroke="#1a1a2e" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                <ellipse cx="35" cy="45" rx="6" ry="4" fill="#ff80ab" opacity="0.3"/>
+                <ellipse cx="65" cy="45" rx="6" ry="4" fill="#ff80ab" opacity="0.3"/>
+                <ellipse cx="50" cy="45" rx="3" ry="2" fill="#ff80ab"/>
+                <path d="M43,50 Q50,57 57,50" stroke="#c2185b" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+                <line x1="20" y1="43" x2="40" y2="46" stroke="#90a4ae" stroke-width="1" opacity="0.6"/>
+                <line x1="20" y1="49" x2="40" y2="49" stroke="#90a4ae" stroke-width="1" opacity="0.6"/>
+                <line x1="60" y1="46" x2="80" y2="43" stroke="#90a4ae" stroke-width="1" opacity="0.6"/>
+                <line x1="60" y1="49" x2="80" y2="49" stroke="#90a4ae" stroke-width="1" opacity="0.6"/>
+                <circle cx="50" cy="64" r="13" fill="rgba(255,255,255,0.2)"/>
+                <circle cx="50" cy="64" r="11" fill="none" stroke="rgba(255,255,255,0.65)" stroke-width="1.5"/>
+                <line x1="50" y1="64" x2="50" y2="57" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+                <line x1="50" y1="64" x2="56" y2="67" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+                <path d="M77,72 Q93,61 89,82 Q85,91 76,83" fill="#7ee8fa" opacity="0.8"/>
+                <text x="80" y="26" font-size="10" fill="#FFD700" opacity="0.9">✦</text>
+                <text x="10" y="30" font-size="7" fill="#ff80ab" opacity="0.8">✦</text>
+            </svg>
+        </div>
+
+        <div style="position:relative;text-align:center;width:360px;max-width:92vw;">
+            <div style="font-family:'Kanit',sans-serif;font-weight:700;font-size:clamp(26px,6vw,38px);letter-spacing:0.1em;background:linear-gradient(90deg,#7ee8fa,#ff80ab);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;margin-bottom:4px;">Timer by Kaekung</div>
+            <div style="font-size:11px;letter-spacing:0.45em;color:rgba(255,255,255,0.2);text-transform:uppercase;margin-bottom:36px;">CONTROL SYSTEM</div>
+
+            <div style="margin-bottom:20px;text-align:left;">
+                <div style="font-size:11px;letter-spacing:0.3em;color:rgba(255,255,255,0.28);text-transform:uppercase;margin-bottom:10px;">EMAIL</div>
+                <input id="authEmail" type="email" placeholder="user@example.com" autocomplete="username"
+                    style="width:100%;background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,0.2);color:#f0f0f0;font-family:'Share Tech Mono',monospace;font-size:18px;letter-spacing:0.08em;padding:10px 0;outline:none;transition:border-color 0.2s;"
+                    onfocus="this.style.borderBottomColor='rgba(126,232,250,0.6)'"
                     onblur="this.style.borderBottomColor='rgba(255,255,255,0.2)'"
                     oninput="clearAuthError()"
-                    onkeydown="if(event.key==='Enter') document.getElementById('authPass').focus()"
-                >
+                    onkeydown="if(event.key==='Enter') document.getElementById('authPass').focus()">
             </div>
 
-            <!-- Password -->
-            <div style="margin-bottom:12px; text-align:left;">
-                <div style="font-size:11px; letter-spacing:0.3em; color:rgba(255,255,255,0.28); text-transform:uppercase; margin-bottom:10px;">PASSWORD</div>
-                <input id="authPass" type="password" placeholder="••••••••"
-                    autocomplete="current-password"
-                    style="
-                        width:100%; background:transparent; border:none;
-                        border-bottom:1px solid rgba(255,255,255,0.2);
-                        color:#f0f0f0; font-family:'Share Tech Mono',monospace;
-                        font-size:26px; letter-spacing:0.2em;
-                        padding:10px 0; outline:none; transition:border-color 0.2s;
-                    "
-                    onfocus="this.style.borderBottomColor='rgba(255,255,255,0.5)'"
+            <div style="margin-bottom:12px;text-align:left;">
+                <div style="font-size:11px;letter-spacing:0.3em;color:rgba(255,255,255,0.28);text-transform:uppercase;margin-bottom:10px;">PASSWORD</div>
+                <input id="authPass" type="password" placeholder="••••••••" autocomplete="current-password"
+                    style="width:100%;background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,0.2);color:#f0f0f0;font-family:'Share Tech Mono',monospace;font-size:26px;letter-spacing:0.2em;padding:10px 0;outline:none;transition:border-color 0.2s;"
+                    onfocus="this.style.borderBottomColor='rgba(126,232,250,0.6)'"
                     onblur="this.style.borderBottomColor='rgba(255,255,255,0.2)'"
                     oninput="clearAuthError()"
-                    onkeydown="if(event.key==='Enter') doLogin()"
-                >
+                    onkeydown="if(event.key==='Enter') doLogin()">
             </div>
 
-            <!-- Error -->
-            <div id="authError" style="
-                font-size:12px; letter-spacing:0.2em;
-                color:rgba(255,32,32,0.8); text-transform:uppercase;
-                min-height:20px; margin-bottom:26px;
-                transition:opacity 0.3s; opacity:0; text-align:left;
-            "></div>
+            <div id="authError" style="font-size:12px;letter-spacing:0.2em;color:rgba(255,32,32,0.8);text-transform:uppercase;min-height:20px;margin-bottom:26px;transition:opacity 0.3s;opacity:0;text-align:left;"></div>
 
-            <!-- Login button -->
-            <button id="loginBtn" onclick="doLogin()" style="
-                width:100%; background:transparent;
-                border:1px solid rgba(255,255,255,0.2);
-                color:rgba(255,255,255,0.6);
-                font-family:'Share Tech Mono',monospace;
-                font-size:13px; letter-spacing:0.4em;
-                text-transform:uppercase; padding:14px;
-                cursor:pointer; border-radius:2px; transition:all 0.2s;
-            "
-            onmouseover="this.style.background='rgba(255,255,255,0.06)';this.style.borderColor='rgba(255,255,255,0.5)';this.style.color='#f0f0f0'"
-            onmouseout="this.style.background='transparent';this.style.borderColor='rgba(255,255,255,0.2)';this.style.color='rgba(255,255,255,0.6)'"
-            >SIGN IN</button>
+            <button id="loginBtn" onclick="doLogin()" style="width:100%;background:transparent;border:1px solid rgba(126,232,250,0.3);color:rgba(126,232,250,0.7);font-family:'Share Tech Mono',monospace;font-size:13px;letter-spacing:0.4em;text-transform:uppercase;padding:14px;cursor:pointer;border-radius:4px;transition:all 0.2s;"
+                onmouseover="this.style.background='rgba(126,232,250,0.08)';this.style.borderColor='rgba(126,232,250,0.7)';this.style.color='#7ee8fa'"
+                onmouseout="this.style.background='transparent';this.style.borderColor='rgba(126,232,250,0.3)';this.style.color='rgba(126,232,250,0.7)'"
+            >SIGN IN 🐱</button>
 
-            <div style="
-                margin-top:26px; font-size:11px; letter-spacing:0.22em;
-                color:rgba(255,255,255,0.1); text-transform:uppercase;
-            ">ระบบรักษาความปลอดภัยด้วย Firebase Auth</div>
+            <div style="margin-top:22px;font-size:10px;letter-spacing:0.22em;color:rgba(255,255,255,0.1);text-transform:uppercase;">ระบบรักษาความปลอดภัยด้วย Firebase Auth</div>
         </div>
     </div>
 
     <div class="glow-bg" id="glowBg"></div>
 
-    <!-- Company Logo -->
-    <div class="company-logo">
-        <img src="data:image/png;base64,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" alt="Logo">
+    <!-- KAEKUNG BRAND BADGE -->
+    <div class="kaekung-brand">
+        <div class="mascot-wrap">
+            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="50" cy="63" rx="27" ry="23" fill="#7ee8fa" opacity="0.85"/>
+                <circle cx="50" cy="39" r="25" fill="#ffe0b2"/>
+                <polygon points="25,19 19,5 35,14" fill="#ff80ab"/>
+                <polygon points="75,19 81,5 65,14" fill="#ff80ab"/>
+                <polygon points="26,18 21,8 34,14" fill="#ffcdd2"/>
+                <polygon points="74,18 79,8 66,14" fill="#ffcdd2"/>
+                <path d="M34,37 Q40,32 46,37" stroke="#1a1a2e" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                <path d="M54,37 Q60,32 66,37" stroke="#1a1a2e" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                <ellipse cx="35" cy="45" rx="6" ry="4" fill="#ff80ab" opacity="0.3"/>
+                <ellipse cx="65" cy="45" rx="6" ry="4" fill="#ff80ab" opacity="0.3"/>
+                <ellipse cx="50" cy="45" rx="3" ry="2" fill="#ff80ab"/>
+                <path d="M43,50 Q50,57 57,50" stroke="#c2185b" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+                <line x1="20" y1="43" x2="40" y2="46" stroke="#90a4ae" stroke-width="1" opacity="0.6"/>
+                <line x1="20" y1="49" x2="40" y2="49" stroke="#90a4ae" stroke-width="1" opacity="0.6"/>
+                <line x1="60" y1="46" x2="80" y2="43" stroke="#90a4ae" stroke-width="1" opacity="0.6"/>
+                <line x1="60" y1="49" x2="80" y2="49" stroke="#90a4ae" stroke-width="1" opacity="0.6"/>
+                <circle cx="50" cy="64" r="13" fill="rgba(255,255,255,0.2)"/>
+                <circle cx="50" cy="64" r="11" fill="none" stroke="rgba(255,255,255,0.65)" stroke-width="1.5"/>
+                <line x1="50" y1="64" x2="50" y2="57" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+                <line x1="50" y1="64" x2="56" y2="67" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+                <path d="M77,72 Q93,61 89,82 Q85,91 76,83" fill="#7ee8fa" opacity="0.8"/>
+                <text x="80" y="26" font-size="10" fill="#FFD700" opacity="0.9">✦</text>
+                <text x="10" y="30" font-size="7" fill="#ff80ab" opacity="0.8">✦</text>
+            </svg>
+        </div>
+        <div class="brand-text">
+            <span class="by-line">Timer by</span>
+            <span class="name-line">Kaekung</span>
+        </div>
     </div>
 
     <!-- Firebase Status -->
@@ -370,6 +378,7 @@
         </div>
     </div>
 
+    <!-- Main content -->
     <div class="wrapper">
         <div class="label" id="labelTop">COUNTDOWN</div>
         <div id="timer">05:00</div>
@@ -408,9 +417,9 @@
         // ══════════════════════════════════════════
         //  THRESHOLD CONFIG
         // ══════════════════════════════════════════
-        const WARNING_THRESHOLD  = 300;   // วินาที → สีเหลือง
-        const CRITICAL_THRESHOLD = 120;   // วินาที → สีแดง
-        const MAX_NEGATIVE_SEC   = 99 * 60; // cap สูงสุดฝั่งลบ
+        const WARNING_THRESHOLD  = 300;
+        const CRITICAL_THRESHOLD = 120;
+        const MAX_NEGATIVE_SEC   = 99 * 60;
 
         // ══════════════════════════════════════════
         //  TIMER STATE
@@ -427,7 +436,6 @@
         const fbDot      = document.getElementById('fbDot');
         const fbLabel    = document.getElementById('fbLabel');
 
-        // ── Display ──────────────────────────────
         function updateDisplay() {
             const isNeg   = timeLeft < 0;
             const absTime = Math.abs(timeLeft);
@@ -470,19 +478,14 @@
                 statusEl.style.color        = 'rgba(255,255,255,0.18)';
             }
 
-            // Progress bar (positive countdown only)
             const ratio = Math.max(0, timeLeft / defaultTime);
-            progressEl.style.transform = `scaleX(${ratio})`;
+            progressEl.style.transform = 'scaleX(' + ratio + ')';
         }
 
-        // ── Core timer controls ───────────────────
         function startTimer() {
             if (countdownInterval) return;
             isRunning = true;
-            countdownInterval = setInterval(() => {
-                timeLeft -= 1;
-                updateDisplay();
-            }, 1000);
+            countdownInterval = setInterval(function(){ timeLeft -= 1; updateDisplay(); }, 1000);
             updateDisplay();
         }
 
@@ -493,9 +496,7 @@
             updateDisplay();
         }
 
-        /**
-         * FIX: resetTimer กลับไปที่ defaultTime (ไม่ใช่ 0)
-         */
+        // FIX: reset กลับ defaultTime
         function resetTimer() {
             pauseTimer();
             timeLeft = defaultTime;
@@ -508,20 +509,14 @@
             updateDisplay();
         }
 
-        // ── applyCommand: logic แยกออกจาก sync ───
         function applyCommand(cmd) {
             if (!cmd) return;
-
-            if (cmd === 'start') {
-                startTimer();
-            } else if (cmd === 'pause') {
-                pauseTimer();
-            } else if (cmd === 'reset') {
-                resetTimer();
-            } else if (cmd === 'stop') {
-                stopTimer();
-            } else if (cmd.startsWith('set_')) {
-                const seconds = parseInt(cmd.split('_')[1], 10);
+            if (cmd === 'start')      { startTimer(); }
+            else if (cmd === 'pause') { pauseTimer(); }
+            else if (cmd === 'reset') { resetTimer(); }
+            else if (cmd === 'stop')  { stopTimer(); }
+            else if (cmd.startsWith('set_')) {
+                var seconds = parseInt(cmd.split('_')[1], 10);
                 if (!isNaN(seconds) && seconds > 0) {
                     pauseTimer();
                     defaultTime = seconds;
@@ -529,18 +524,15 @@
                     updateDisplay();
                 }
             } else if (cmd.startsWith('add_')) {
-                const seconds = parseInt(cmd.split('_')[1], 10);
+                var seconds = parseInt(cmd.split('_')[1], 10);
                 if (!isNaN(seconds)) {
                     timeLeft    += seconds;
                     defaultTime  = Math.max(defaultTime, timeLeft);
                     updateDisplay();
                 }
             } else if (cmd.startsWith('sub_')) {
-                /**
-                 * FIX: clamp ค่าต่ำสุดเพื่อป้องกัน overflow ฝั่งลบ
-                 * รูปแบบ: sub_<seconds>_<timestamp>  (timestamp ทำให้ค่า unique)
-                 */
-                const seconds = parseInt(cmd.split('_')[1], 10);
+                // FIX: clamp ป้องกัน overflow
+                var seconds = parseInt(cmd.split('_')[1], 10);
                 if (!isNaN(seconds)) {
                     timeLeft = Math.max(timeLeft - seconds, -MAX_NEGATIVE_SEC);
                     updateDisplay();
@@ -548,64 +540,56 @@
             }
         }
 
-        /**
-         * FIX: localCommand ใช้ applyCommand แทนการ call ฟังก์ชันโดยตรง
-         * เพื่อป้องกัน double-execution เมื่อ Firebase listener ยิงกลับมา
-         * วิธี: ใช้ flag isLocalAction เพื่อ skip Firebase listener รอบที่ตัวเองส่ง
-         */
-        let isLocalAction = false;
+        // FIX: ป้องกัน double-execution
+        var isLocalAction = false;
 
         function localCommand(cmd) {
             applyCommand(cmd);
             if (database && firebase.auth().currentUser) {
                 isLocalAction = true;
-                database.ref('timer/command').set(cmd).finally(() => {
-                    // รีเซ็ต flag หลัง Firebase ตอบกลับ
-                    setTimeout(() => { isLocalAction = false; }, 300);
+                database.ref('timer/command').set(cmd).finally(function(){
+                    setTimeout(function(){ isLocalAction = false; }, 300);
                 });
             }
         }
 
-        // ══════════════════════════════════════════
-        //  AUTH
-        // ══════════════════════════════════════════
+        // AUTH
         function showLogin() {
-            const overlay = document.getElementById('loginOverlay');
-            overlay.style.display   = 'flex';
-            overlay.style.opacity   = '1';
+            var overlay = document.getElementById('loginOverlay');
+            overlay.style.display    = 'flex';
+            overlay.style.opacity    = '1';
             overlay.style.transition = '';
-            setTimeout(() => document.getElementById('authEmail').focus(), 100);
+            setTimeout(function(){ document.getElementById('authEmail').focus(); }, 100);
         }
 
         function hideLogin() {
-            const overlay = document.getElementById('loginOverlay');
+            var overlay = document.getElementById('loginOverlay');
             overlay.style.transition = 'opacity 0.5s ease';
-            overlay.style.opacity   = '0';
-            setTimeout(() => { overlay.style.display = 'none'; }, 500);
+            overlay.style.opacity    = '0';
+            setTimeout(function(){ overlay.style.display = 'none'; }, 500);
         }
 
         function doLogin() {
-            const email = document.getElementById('authEmail').value.trim();
-            const pass  = document.getElementById('authPass').value;
-            const btn   = document.getElementById('loginBtn');
-            const err   = document.getElementById('authError');
+            var email = document.getElementById('authEmail').value.trim();
+            var pass  = document.getElementById('authPass').value;
+            var btn   = document.getElementById('loginBtn');
+            var err   = document.getElementById('authError');
 
             if (!email || !pass) {
-                err.textContent    = 'กรุณากรอก email และ password';
-                err.style.opacity  = '1';
+                err.textContent   = 'กรุณากรอก email และ password';
+                err.style.opacity = '1';
                 return;
             }
-
-            btn.textContent = 'SIGNING IN...';
+            btn.textContent   = 'SIGNING IN...';
             btn.style.opacity = '0.5';
-            btn.disabled = true;
+            btn.disabled      = true;
 
             firebase.auth().signInWithEmailAndPassword(email, pass)
-                .catch(e => {
-                    btn.textContent   = 'SIGN IN';
+                .catch(function(e) {
+                    btn.textContent   = 'SIGN IN 🐱';
                     btn.style.opacity = '1';
                     btn.disabled      = false;
-                    const msgs = {
+                    var msgs = {
                         'auth/user-not-found':     'ไม่พบ email นี้ในระบบ',
                         'auth/wrong-password':     'รหัสผ่านไม่ถูกต้อง',
                         'auth/invalid-email':      'รูปแบบ email ไม่ถูกต้อง',
@@ -623,32 +607,26 @@
             document.getElementById('authError').style.opacity = '0';
         }
 
-        function doLogout() {
-            firebase.auth().signOut();
-        }
+        function doLogout() { firebase.auth().signOut(); }
 
-        // ══════════════════════════════════════════
-        //  FIREBASE INIT
-        // ══════════════════════════════════════════
-        let database = null;
+        // FIREBASE INIT
+        var database = null;
 
         try {
             firebase.initializeApp(firebaseConfig);
             database = firebase.database();
 
-            // ── Auth state ──
-            firebase.auth().onAuthStateChanged(user => {
+            firebase.auth().onAuthStateChanged(function(user) {
                 if (user) {
                     hideLogin();
-                    const emailEl = document.getElementById('userEmail');
+                    var emailEl = document.getElementById('userEmail');
                     if (emailEl) emailEl.textContent = user.email;
                 } else {
                     showLogin();
                 }
             });
 
-            // ── Connection indicator ──
-            database.ref('.info/connected').on('value', snap => {
+            database.ref('.info/connected').on('value', function(snap) {
                 if (snap.val()) {
                     fbDot.className    = 'dot connected';
                     fbLabel.textContent = 'LIVE';
@@ -658,48 +636,40 @@
                 }
             });
 
-            // ── Command listener ──────────────────
-            // FIX: guard ด้วย auth check + isLocalAction flag
-            database.ref('timer/command').on('value', snap => {
-                // ไม่รับคำสั่งถ้ายังไม่ได้ login
+            // FIX: guard auth + isLocalAction
+            database.ref('timer/command').on('value', function(snap) {
                 if (!firebase.auth().currentUser) return;
-                // ไม่รับคำสั่งที่ตัวเองเพิ่งส่ง (ป้องกัน double-execution)
                 if (isLocalAction) return;
-
                 applyCommand(snap.val());
             });
 
-        } catch (e) {
+        } catch(e) {
             fbDot.className    = 'dot error';
             fbLabel.textContent = 'NO DB';
             console.warn('Firebase not configured:', e.message);
         }
 
-        // ══════════════════════════════════════════
-        //  CURRENT CLOCK
-        // ══════════════════════════════════════════
-        const clockEl    = document.getElementById('clockDisplay');
-        const dateEl     = document.getElementById('clockDate');
-        const DAYS_TH    = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัส','ศุกร์','เสาร์'];
-        const MONTHS_TH  = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+        // CURRENT CLOCK
+        var clockEl   = document.getElementById('clockDisplay');
+        var dateEl    = document.getElementById('clockDate');
+        var DAYS_TH   = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัส','ศุกร์','เสาร์'];
+        var MONTHS_TH = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
 
         function updateClock() {
-            const now   = new Date();
-            const hh    = now.getHours().toString().padStart(2, '0');
-            const mm    = now.getMinutes().toString().padStart(2, '0');
-            const ss    = now.getSeconds().toString().padStart(2, '0');
-            clockEl.textContent = `${hh}:${mm}:${ss}`;
-
-            const day   = DAYS_TH[now.getDay()];
-            const date  = now.getDate();
-            const month = MONTHS_TH[now.getMonth()];
-            const year  = now.getFullYear() + 543;
-            dateEl.textContent = `${day} ${date} ${month} ${year}`;
+            var now   = new Date();
+            var hh    = now.getHours().toString().padStart(2,'0');
+            var mm    = now.getMinutes().toString().padStart(2,'0');
+            var ss    = now.getSeconds().toString().padStart(2,'0');
+            clockEl.textContent = hh+':'+mm+':'+ss;
+            var day   = DAYS_TH[now.getDay()];
+            var date  = now.getDate();
+            var month = MONTHS_TH[now.getMonth()];
+            var year  = now.getFullYear() + 543;
+            dateEl.textContent = day+' '+date+' '+month+' '+year;
         }
         updateClock();
         setInterval(updateClock, 1000);
 
-        // Init display
         updateDisplay();
     </script>
 </body>
