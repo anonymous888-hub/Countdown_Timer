@@ -377,7 +377,7 @@ var fbLabel    = document.getElementById('fbLabel');
 /* ── คำนวณ timeLeft ปัจจุบันจาก Firebase ── */
 function calcTimeLeft() {
     if (_fbRunning && _fbUpdatedAt) {
-        var elapsed = Math.floor((Date.now() - _fbUpdatedAt) / 1000);
+        var elapsed = Math.max(0, Math.floor((Date.now() - _fbUpdatedAt) / 1000));
         return _fbTimeLeft - elapsed;
     }
     return _fbTimeLeft;
