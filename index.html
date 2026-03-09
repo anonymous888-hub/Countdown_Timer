@@ -200,35 +200,33 @@
 
 <script>
     (function(){
-        // ดาวสีขาวทั่วไป — ช้า สุ่ม size/duration
-        for(var i=0;i<70;i++){
-            var s=document.createElement('div'); s.className='star';
-            var sz=Math.random()*2.2+0.6;
-            var dur=4+Math.random()*8;
-            var delay=Math.random()*10;
+        const frag = document.createDocumentFragment();
+        // ดาวสีขาวทั่วไป
+        for(let i=0;i<70;i++){
+            const s=document.createElement('div'); s.className='star';
+            const sz=Math.random()*2.2+0.6;
             s.style.cssText='width:'+sz+'px;height:'+sz+'px;'
                 +'left:'+(Math.random()*100)+'vw;'
                 +'top:'+(Math.random()*100)+'vh;'
                 +'background:#fff;'
-                +'animation-duration:'+dur+'s;'
-                +'animation-delay:'+delay+'s;';
-            document.body.appendChild(s);
+                +'animation-duration:'+(4+Math.random()*8)+'s;'
+                +'animation-delay:'+(Math.random()*10)+'s;';
+            frag.appendChild(s);
         }
-        // ดาวสีทองระยิบ — น้อยกว่า โดดเด่น
-        for(var j=0;j<18;j++){
-            var g=document.createElement('div'); g.className='star-gold';
-            var sz2=Math.random()*2.5+1.2;
-            var dur2=5+Math.random()*9;
-            var delay2=Math.random()*12;
+        // ดาวสีทองระยิบ
+        for(let j=0;j<18;j++){
+            const g=document.createElement('div'); g.className='star-gold';
+            const sz2=Math.random()*2.5+1.2;
             g.style.cssText='width:'+sz2+'px;height:'+sz2+'px;'
                 +'left:'+(Math.random()*100)+'vw;'
                 +'top:'+(Math.random()*100)+'vh;'
                 +'background:#ffd700;'
                 +'box-shadow:0 0 4px 1px rgba(255,215,0,.5);'
-                +'animation-duration:'+dur2+'s;'
-                +'animation-delay:'+delay2+'s;';
-            document.body.appendChild(g);
+                +'animation-duration:'+(5+Math.random()*9)+'s;'
+                +'animation-delay:'+(Math.random()*12)+'s;';
+            frag.appendChild(g);
         }
+        document.body.appendChild(frag); // DOM reflow ครั้งเดียว
     })();
 </script>
 
@@ -355,41 +353,39 @@ const WARNING_THRESHOLD  = 300;
 const CRITICAL_THRESHOLD = 120;
 const MAX_NEGATIVE_SEC   = 99 * 60;
 
-var defaultTime = 300;
-var isRunning   = false;
+/* ── Timer state ทั้งหมดอยู่ใน object เดียว ── */
+const fb = {
+    timeLeft:    300,
+    updatedAt:   null,
+    running:     false,
+    defaultTime: 300,
+};
+let _tickInterval   = null;
+let _stateListening = false;
 
-/* Firebase source-of-truth */
-var _fbTimeLeft    = 300;
-var _fbUpdatedAt   = null;
-var _fbRunning     = false;
-var _fbDefaultTime = 300;
-
-var _tickInterval     = null;
-var _stateListening   = false;
-
-var timerEl    = document.getElementById('timer');
-var progressEl = document.getElementById('progressFill');
-var statusEl   = document.getElementById('statusLine');
-var glowBg     = document.getElementById('glowBg');
-var fbDot      = document.getElementById('fbDot');
-var fbLabel    = document.getElementById('fbLabel');
+const timerEl    = document.getElementById('timer');
+const progressEl = document.getElementById('progressFill');
+const statusEl   = document.getElementById('statusLine');
+const glowBg     = document.getElementById('glowBg');
+const fbDot      = document.getElementById('fbDot');
+const fbLabel    = document.getElementById('fbLabel');
 
 /* ── คำนวณ timeLeft ปัจจุบันจาก Firebase ── */
 function calcTimeLeft() {
-    if (_fbRunning && _fbUpdatedAt) {
-        var elapsed = Math.max(0, Math.floor((Date.now() - _fbUpdatedAt) / 1000));
-        return _fbTimeLeft - elapsed;
+    if (fb.running && fb.updatedAt) {
+        const elapsed = Math.max(0, Math.floor((Date.now() - fb.updatedAt) / 1000));
+        return fb.timeLeft - elapsed;
     }
-    return _fbTimeLeft;
+    return fb.timeLeft;
 }
 
 function updateDisplay() {
-    var timeLeft = calcTimeLeft();
-    var isNeg   = timeLeft < 0;
-    var absTime = Math.abs(timeLeft);
-    var hh      = Math.floor(absTime / 3600);
-    var mm      = Math.floor((absTime % 3600) / 60).toString().padStart(2,'0');
-    var ss      = (absTime % 60).toString().padStart(2,'0');
+    const timeLeft = calcTimeLeft();
+    const isNeg   = timeLeft < 0;
+    const absTime = Math.abs(timeLeft);
+    const hh      = Math.floor(absTime / 3600);
+    const mm      = Math.floor((absTime % 3600) / 60).toString().padStart(2,'0');
+    const ss      = (absTime % 60).toString().padStart(2,'0');
     timerEl.textContent = hh > 0
         ? (isNeg ? '-' : '') + hh + ':' + mm + ':' + ss
         : (isNeg ? '-' : '') + mm + ':' + ss;
@@ -401,7 +397,7 @@ function updateDisplay() {
         glowBg.style.background     = 'rgb(255,32,32)';
         glowBg.style.opacity        = '0.18';
         progressEl.style.background = 'var(--clr-red)';
-        statusEl.textContent        = _fbRunning ? '— TIME OVER —' : '— STOPPED —';
+        statusEl.textContent        = fb.running ? '— TIME OVER —' : '— STOPPED —';
         statusEl.style.color        = 'rgba(255,80,80,0.5)';
     } else if (timeLeft <= CRITICAL_THRESHOLD) {
         timerEl.classList.add('critical');
@@ -421,17 +417,17 @@ function updateDisplay() {
         glowBg.style.background     = 'rgb(240,240,240)';
         glowBg.style.opacity        = '0.10';
         progressEl.style.background = 'var(--clr-white)';
-        statusEl.textContent        = _fbRunning ? '— RUNNING —' : '— READY —';
+        statusEl.textContent        = fb.running ? '— RUNNING —' : '— READY —';
         statusEl.style.color        = 'rgba(255,255,255,0.18)';
     }
 
-    var ratio = Math.max(0, timeLeft / _fbDefaultTime);
+    const ratio = Math.max(0, timeLeft / fb.defaultTime);
     progressEl.style.transform = 'scaleX(' + ratio + ')';
 }
 
 /* ── User-scoped timer path ── */
 function timerStateRef() {
-    var user = firebase.auth().currentUser;
+    const user = firebase.auth().currentUser;
     if (!user) return null;
     return database.ref('users/' + user.uid + '/timer/state');
 }
@@ -442,57 +438,48 @@ function timerStateRef() {
    ════════════════════════════════════ */
 function attachStateListener() {
     if (_stateListening) return;
-    var ref = timerStateRef();
+    const ref = timerStateRef();
     if (!ref) return;
     _stateListening = true;
 
     ref.on('value', function(snap) {
-        var st = snap.val();
+        const st = snap.val();
         if (!st) return;
 
-        // อัปเดต local cache จาก Firebase
-        if (typeof st.defaultTime === 'number' && st.defaultTime > 0)
-            _fbDefaultTime = st.defaultTime;
-        if (typeof st.timeLeft    === 'number') _fbTimeLeft  = st.timeLeft;
-        if (typeof st.updatedAt   === 'number') _fbUpdatedAt = st.updatedAt;
-        if (typeof st.isRunning   === 'boolean') {
-            _fbRunning = st.isRunning;
-            isRunning  = st.isRunning;
-        }
+        if (typeof st.defaultTime === 'number' && st.defaultTime > 0) fb.defaultTime = st.defaultTime;
+        if (typeof st.timeLeft    === 'number')  fb.timeLeft  = st.timeLeft;
+        if (typeof st.updatedAt   === 'number')  fb.updatedAt = st.updatedAt;
+        if (typeof st.isRunning   === 'boolean') fb.running   = st.isRunning;
 
-        defaultTime = _fbDefaultTime;
         updateDisplay();
 
-        // จัดการ tick interval
-        if (_fbRunning && !_tickInterval) {
+        if (fb.running && !_tickInterval) {
             _startTick();
-        } else if (!_fbRunning && _tickInterval) {
+        } else if (!fb.running && _tickInterval) {
             clearInterval(_tickInterval);
             _tickInterval = null;
         }
     });
 
-    // เริ่ม tick เฉพาะถ้า running อยู่แล้วตอน attach
-    if (_fbRunning) _startTick();
+    if (fb.running) _startTick();
 }
 
-/* Smooth tick ทุก 250ms คำนวณจาก _fbUpdatedAt เสมอ ไม่ drift */
+/* Smooth tick ทุก 250ms */
 function _startTick() {
     if (_tickInterval) return;
     _tickInterval = setInterval(function() {
-        if (!_fbRunning || !_fbUpdatedAt) return;
+        if (!fb.running || !fb.updatedAt) return;
         updateDisplay();
     }, 250);
 }
 
 function detachStateListener() {
-    var ref = timerStateRef();
+    const ref = timerStateRef();
     if (ref) ref.off();
     if (_tickInterval) { clearInterval(_tickInterval); _tickInterval = null; }
-    _stateListening = false;
-    _fbRunning = false;
-    isRunning  = false;
-    _fbUpdatedAt = null;
+    _stateListening  = false;
+    fb.running       = false;
+    fb.updatedAt     = null;
 }
 
 /* ═══ AUTH ═══ */
