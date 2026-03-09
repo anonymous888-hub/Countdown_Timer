@@ -159,19 +159,21 @@
         /* Fullscreen button */
         #fsBtn {
             position: fixed; bottom: 24px; right: 24px; z-index: 50;
-            width: 44px; height: 44px; border-radius: 10px;
-            background: rgba(255,255,255,0.06);
-            border: 1px solid rgba(255,255,255,0.14);
-            color: rgba(255,255,255,0.35);
-            font-size: 18px; cursor: pointer;
+            width: 48px; height: 48px; border-radius: 12px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.22);
+            color: rgba(255,255,255,0.55);
+            cursor: pointer;
             display: flex; align-items: center; justify-content: center;
             transition: all 0.2s; backdrop-filter: blur(6px);
         }
         #fsBtn:hover {
-            background: rgba(126,232,250,0.12);
-            border-color: rgba(126,232,250,0.45);
+            background: rgba(126,232,250,0.15);
+            border-color: rgba(126,232,250,0.6);
             color: #7ee8fa;
+            transform: scale(1.08);
         }
+        #fsBtn svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
 
         @media (max-width: 900px) {
             .mascot-wrap { width: 42px; height: 42px; }
@@ -303,7 +305,10 @@
 </div>
 
 <!-- Fullscreen button -->
-<button id="fsBtn" onclick="toggleFullscreen()" title="เต็มจอ">⛶</button>
+<button id="fsBtn" onclick="toggleFullscreen()" title="เต็มจอ">
+  <svg id="fsIconExpand" viewBox="0 0 24 24"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+  <svg id="fsIconCollapse" viewBox="0 0 24 24" style="display:none"><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="10" y1="14" x2="3" y2="21"/><line x1="21" y1="3" x2="14" y2="10"/></svg>
+</button>
 
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -548,8 +553,10 @@ function toggleFullscreen() {
 }
 
 document.addEventListener('fullscreenchange', function() {
-    fsBtn.textContent = document.fullscreenElement ? '✕' : '⛶';
-    fsBtn.title = document.fullscreenElement ? 'ออกจากเต็มจอ' : 'เต็มจอ';
+    var isFs = !!document.fullscreenElement;
+    document.getElementById('fsIconExpand').style.display   = isFs ? 'none' : '';
+    document.getElementById('fsIconCollapse').style.display = isFs ? '' : 'none';
+    fsBtn.title = isFs ? 'ออกจากเต็มจอ' : 'เต็มจอ';
 });
 </script>
 </body>
