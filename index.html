@@ -191,18 +191,43 @@
             .label { display: none; }
         }
         .star { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0; animation: twinkle linear infinite; }
-        @keyframes twinkle { 0%,100%{opacity:.04;transform:scale(1)} 50%{opacity:.22;transform:scale(1.4)} }
+        @keyframes twinkle { 0%,100%{opacity:.08;transform:scale(1)} 50%{opacity:.65;transform:scale(1.5)} }
+        .star-gold { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0; animation: twinkle-gold ease-in-out infinite; }
+        @keyframes twinkle-gold { 0%,100%{opacity:0;transform:scale(.6)} 40%,60%{opacity:.55;transform:scale(1.2)} }
     </style>
 </head>
 <body>
 
 <script>
     (function(){
-        for(var i=0;i<40;i++){
+        // ดาวสีขาวทั่วไป — ช้า สุ่ม size/duration
+        for(var i=0;i<70;i++){
             var s=document.createElement('div'); s.className='star';
-            var sz=Math.random()*2+1;
-            s.style.cssText='width:'+sz+'px;height:'+sz+'px;left:'+(Math.random()*100)+'vw;top:'+(Math.random()*100)+'vh;background:#fff;animation-duration:'+(2+Math.random()*4)+'s;animation-delay:'+(Math.random()*4)+'s;';
+            var sz=Math.random()*2.2+0.6;
+            var dur=4+Math.random()*8;
+            var delay=Math.random()*10;
+            s.style.cssText='width:'+sz+'px;height:'+sz+'px;'
+                +'left:'+(Math.random()*100)+'vw;'
+                +'top:'+(Math.random()*100)+'vh;'
+                +'background:#fff;'
+                +'animation-duration:'+dur+'s;'
+                +'animation-delay:'+delay+'s;';
             document.body.appendChild(s);
+        }
+        // ดาวสีทองระยิบ — น้อยกว่า โดดเด่น
+        for(var j=0;j<18;j++){
+            var g=document.createElement('div'); g.className='star-gold';
+            var sz2=Math.random()*2.5+1.2;
+            var dur2=5+Math.random()*9;
+            var delay2=Math.random()*12;
+            g.style.cssText='width:'+sz2+'px;height:'+sz2+'px;'
+                +'left:'+(Math.random()*100)+'vw;'
+                +'top:'+(Math.random()*100)+'vh;'
+                +'background:#ffd700;'
+                +'box-shadow:0 0 4px 1px rgba(255,215,0,.5);'
+                +'animation-duration:'+dur2+'s;'
+                +'animation-delay:'+delay2+'s;';
+            document.body.appendChild(g);
         }
     })();
 </script>
