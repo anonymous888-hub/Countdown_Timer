@@ -467,11 +467,18 @@ database.ref('.info/connected').on('value', function(snap) {
 var _fbTimeLeft = 300, _fbUpdatedAt = null, _fbRunning = false, _fbDefaultTime = 300;
 var _stateListening = false;
 
+/* ── User-scoped timer path ── */
+function timerRef(path){
+  var user=firebase.auth().currentUser;
+  if(!user)return null;
+  return database.ref('users/'+user.uid+'/timer/'+path);
+}
+
 function attachStateListener() {
     if (_stateListening) return;
     _stateListening = true;
 
-    database.ref('timer/state').on('value', function(snap) {
+    timerRef('state').on('value', function(snap) {
         var st = snap.val();
         if (!st) return;
         if (typeof st.defaultTime === 'number' && st.defaultTime > 0) _fbDefaultTime = st.defaultTime;
@@ -503,7 +510,7 @@ function attachStateListener() {
 }
 
 function detachStateListener() {
-    database.ref('timer/state').off();
+    timerRef('state').off();
     if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
     _stateListening = false;
 }
