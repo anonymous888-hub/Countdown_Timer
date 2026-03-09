@@ -352,7 +352,7 @@ var fbLabel    = document.getElementById('fbLabel');
 /* ── คำนวณ timeLeft ปัจจุบันจาก Firebase ── */
 function calcTimeLeft() {
     if (_fbRunning && _fbUpdatedAt) {
-        var elapsed = Math.round((Date.now() - _fbUpdatedAt) / 1000);
+        var elapsed = Math.floor((Date.now() - _fbUpdatedAt) / 1000);
         return _fbTimeLeft - elapsed;
     }
     return _fbTimeLeft;
@@ -447,8 +447,8 @@ function attachStateListener() {
         }
     });
 
-    // เริ่ม tick ทันทีเผื่อ running อยู่แล้ว
-    _startTick();
+    // เริ่ม tick เฉพาะถ้า running อยู่แล้วตอน attach
+    if (_fbRunning) _startTick();
 }
 
 /* Smooth tick ทุก 250ms คำนวณจาก _fbUpdatedAt เสมอ ไม่ drift */
