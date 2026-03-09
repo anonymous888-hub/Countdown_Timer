@@ -463,51 +463,62 @@ database.ref('.info/connected').on('value', function(snap) {
     else            { fbDot.className='dot error';     fbLabel.textContent='OFFLINE'; }
 });
 
+// ── Timer state: source of truth จาก Firebase ──
+var _fbTimeLeft = 300, _fbUpdatedAt = null, _fbRunning = false, _fbDefaultTime = 300;
+var _stateListening = false;
+
+function attachStateListener() {
+    if (_stateListening) return;
+    _stateListening = true;
+
+    database.ref('timer/state').on('value', function(snap) {
+        var st = snap.val();
+        if (!st) return;
+        if (typeof st.defaultTime === 'number' && st.defaultTime > 0) _fbDefaultTime = st.defaultTime;
+        if (typeof st.timeLeft    === 'number') _fbTimeLeft  = st.timeLeft;
+        if (typeof st.updatedAt   === 'number') _fbUpdatedAt = st.updatedAt;
+        if (typeof st.isRunning   === 'boolean') {
+            _fbRunning = st.isRunning;
+            isRunning  = st.isRunning;
+        }
+        defaultTime = _fbDefaultTime;
+        // compensate network lag
+        if (_fbRunning && _fbUpdatedAt) {
+            var lag = Math.round((Date.now() - _fbUpdatedAt) / 1000);
+            timeLeft = _fbTimeLeft - lag;
+        } else {
+            timeLeft = _fbTimeLeft;
+        }
+        updateDisplay();
+    });
+
+    // smooth tick ทุก 500ms คำนวณจาก Firebase เสมอ ไม่ drift
+    if (countdownInterval) clearInterval(countdownInterval);
+    countdownInterval = setInterval(function() {
+        if (!_fbRunning || !_fbUpdatedAt) return;
+        var elapsed = Math.round((Date.now() - _fbUpdatedAt) / 1000);
+        timeLeft = _fbTimeLeft - elapsed;
+        updateDisplay();
+    }, 500);
+}
+
+function detachStateListener() {
+    database.ref('timer/state').off();
+    if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
+    _stateListening = false;
+}
+
 firebase.auth().onAuthStateChanged(function(user) {
     if (user) {
         hideLogin();
         document.getElementById('userEmail').textContent = user.displayName || user.email;
+        attachStateListener(); // attach หลัง auth พร้อม → ไม่พลาด snap แรก
     } else {
         showLogin();
         document.getElementById('userEmail').textContent = '';
+        detachStateListener();
     }
 });
-
-// ── Timer state: source of truth จาก Firebase ──
-// Display ไม่นับ interval เอง แต่ interpolate จาก tLeft + updatedAt
-var _fbTimeLeft = 300, _fbUpdatedAt = null, _fbRunning = false, _fbDefaultTime = 300;
-
-database.ref('timer/state').on('value', function(snap) {
-    if (!firebase.auth().currentUser) return;
-    var st = snap.val();
-    if (!st) return;
-    if (typeof st.defaultTime === 'number' && st.defaultTime > 0) _fbDefaultTime = st.defaultTime;
-    if (typeof st.timeLeft    === 'number') _fbTimeLeft   = st.timeLeft;
-    if (typeof st.updatedAt   === 'number') _fbUpdatedAt  = st.updatedAt;
-    if (typeof st.isRunning   === 'boolean'){
-        _fbRunning = st.isRunning;
-        isRunning  = st.isRunning;
-    }
-    defaultTime = _fbDefaultTime;
-    // คำนวณ timeLeft ณ ตอนนี้โดย compensate เวลาที่ผ่านไปตั้งแต่ controller push ล่าสุด
-    if (_fbRunning && _fbUpdatedAt) {
-        var lag = Math.round((Date.now() - _fbUpdatedAt) / 1000);
-        timeLeft = _fbTimeLeft - lag;
-    } else {
-        timeLeft = _fbTimeLeft;
-    }
-    updateDisplay();
-});
-
-// ── Display นับ smooth ด้วย local interval แต่ sync กับ Firebase ทุก tick ──
-// ป้องกัน drift: ทุก tick คำนวณจาก _fbTimeLeft + elapsed จริงๆ
-if (countdownInterval) clearInterval(countdownInterval);
-countdownInterval = setInterval(function() {
-    if (!_fbRunning || !_fbUpdatedAt) return;
-    var elapsed = Math.round((Date.now() - _fbUpdatedAt) / 1000);
-    timeLeft = _fbTimeLeft - elapsed;
-    updateDisplay();
-}, 500); // refresh ทุก 500ms เพื่อให้ smooth และไม่ drift
 
 // CLOCK
 var clockEl   = document.getElementById('clockDisplay');
