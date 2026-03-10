@@ -484,14 +484,14 @@ function detachStateListener() {
 
 /* ═══ AUTH ═══ */
 function loginEmail_pw() {
-    var email = (document.getElementById('loginEmail').value || '').trim();
-    var pass  = document.getElementById('loginPassword').value || '';
-    var errEl = document.getElementById('loginErr');
+    const email = (document.getElementById('loginEmail').value || '').trim();
+    const pass  = document.getElementById('loginPassword').value || '';
+    const errEl = document.getElementById('loginErr');
     errEl.textContent = '';
     if (!email || !pass) { errEl.textContent = 'กรุณากรอกอีเมลและรหัสผ่าน'; return; }
     errEl.textContent = 'กำลังตรวจสอบ...';
     firebase.auth().signInWithEmailAndPassword(email, pass).catch(function(e) {
-        var msg = e.code === 'auth/user-not-found'     ? 'ไม่พบบัญชีนี้'
+        const msg = e.code === 'auth/user-not-found'     ? 'ไม่พบบัญชีนี้'
                 : e.code === 'auth/wrong-password'     ? 'รหัสผ่านไม่ถูกต้อง'
                 : e.code === 'auth/invalid-email'      ? 'รูปแบบอีเมลไม่ถูกต้อง'
                 : e.code === 'auth/invalid-credential' ? 'Email หรือ Password ไม่ถูกต้อง'
@@ -503,18 +503,18 @@ function loginEmail_pw() {
 function doLogout() { firebase.auth().signOut(); }
 
 function showLogin() {
-    var ov = document.getElementById('loginOverlay');
+    const ov = document.getElementById('loginOverlay');
     ov.style.display = 'flex'; ov.style.opacity = '1'; ov.style.transition = '';
 }
 function hideLogin() {
-    var ov = document.getElementById('loginOverlay');
+    const ov = document.getElementById('loginOverlay');
     ov.style.transition = 'opacity 0.5s ease'; ov.style.opacity = '0';
     setTimeout(function(){ ov.style.display = 'none'; }, 500);
 }
 
 /* ═══ FIREBASE INIT ═══ */
 firebase.initializeApp(firebaseConfig);
-var database = firebase.database();
+const database = firebase.database();
 
 database.ref('.info/connected').on('value', function(snap) {
     if (snap.val()) { fbDot.className='dot connected'; fbLabel.textContent='LIVE'; }
@@ -534,13 +534,13 @@ firebase.auth().onAuthStateChanged(function(user) {
 });
 
 /* ═══ CLOCK ═══ */
-var clockEl   = document.getElementById('clockDisplay');
-var dateEl    = document.getElementById('clockDate');
-var DAYS_TH   = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัส','ศุกร์','เสาร์'];
-var MONTHS_TH = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+const clockEl   = document.getElementById('clockDisplay');
+const dateEl    = document.getElementById('clockDate');
+const DAYS_TH   = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัส','ศุกร์','เสาร์'];
+const MONTHS_TH = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
 
 function updateClock() {
-    var now = new Date();
+    const now = new Date();
     clockEl.textContent = now.getHours().toString().padStart(2,'0') + ':' +
                           now.getMinutes().toString().padStart(2,'0') + ':' +
                           now.getSeconds().toString().padStart(2,'0');
@@ -552,7 +552,7 @@ setInterval(updateClock, 1000);
 updateDisplay();
 
 /* ═══ FULLSCREEN ═══ */
-var fsBtn = document.getElementById('fsBtn');
+const fsBtn = document.getElementById('fsBtn');
 
 function toggleFullscreen() {
     if (!document.fullscreenElement) {
@@ -565,7 +565,7 @@ function toggleFullscreen() {
 }
 
 document.addEventListener('fullscreenchange', function() {
-    var isFs = !!document.fullscreenElement;
+    const isFs = !!document.fullscreenElement;
     document.getElementById('fsIconExpand').style.display   = isFs ? 'none' : '';
     document.getElementById('fsIconCollapse').style.display = isFs ? '' : 'none';
     fsBtn.title = isFs ? 'ออกจากเต็มจอ' : 'เต็มจอ';
