@@ -72,7 +72,7 @@
         .fb-row { display: flex; align-items: center; gap: 8px; }
         .dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.2); }
         .dot.connected { background: #00ff88; box-shadow: 0 0 6px #00ff88; }
-        .dot.error     { background: #ff4040; box-shadow: 0 0 6px #ff4040; }
+        .dot.error      { background: #ff4040; box-shadow: 0 0 6px #ff4040; }
         #fbLabel { font-size: 10px; letter-spacing: 0.35em; color: rgba(255,255,255,0.25); text-transform: uppercase; }
         #userEmail { font-size: 9px; letter-spacing: 0.1em; color: rgba(255,255,255,0.18); max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         #logoutBtn {
@@ -101,30 +101,20 @@
         }
         .current-clock {
             position: fixed; bottom: 24px; left: 28px; z-index: 20;
-            .current-clock {
-    ...
-    min-width: 220px; /* ✅ ป้องกัน container เปลี่ยนขนาด */
-}
             display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
+            font-family: 'Kanit', sans-serif; /* จัดฟอนต์ Kanit ให้ครอบคลุมส่วนนาฬิกา */
         }
         .clock-label { font-size: 10px; letter-spacing: 0.35em; color: rgba(255,255,255,0.2); text-transform: uppercase; }
-        #clockDisplay {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 52px;
-    color: rgba(255,255,255,0.55);
-    letter-spacing: 0.06em;
-    line-height: 1;
-    font-variant-numeric: tabular-nums; /* ✅ เพิ่มบรรทัดนี้ */
-    min-width: 160px;                   /* ✅ lock ความกว้าง */
-}
+        #clockDisplay { 
+            font-family: 'Bebas Neue', sans-serif; 
+            font-size: 52px; 
+            color: rgba(255,255,255,0.55); 
+            letter-spacing: 0.06em; 
+            line-height: 1; 
+            font-variant-numeric: tabular-nums; /* ป้องกันตัวเลขขยับเวลาเดิน */
+        }
+        .clock-date { font-size: 11px; letter-spacing: 0.3em; color: rgba(255,255,255,0.18); }
 
-.clock-date {
-    font-size: 11px;
-    letter-spacing: 0.3em;
-    color: rgba(255,255,255,0.18);
-    white-space: nowrap;  /* ✅ ป้องกัน wrap */
-    min-width: 200px;     /* ✅ lock ความกว้าง */
-}
         /* LOGIN OVERLAY */
         #loginOverlay {
             position: fixed; inset: 0; z-index: 9999; background: #000;
@@ -217,6 +207,7 @@
 <body>
 
 <script>
+    // การสร้างกลุ่มดาวพื้นหลังแบบ Optimize DOM 
     (function(){
         const frag = document.createDocumentFragment();
         // ดาวสีขาวทั่วไป
@@ -248,7 +239,6 @@
     })();
 </script>
 
-<!-- LOGIN OVERLAY -->
 <div id="loginOverlay">
     <div class="login-blob"></div>
     <div class="login-card">
@@ -287,7 +277,6 @@
 
 <div class="glow-bg" id="glowBg"></div>
 
-<!-- Brand -->
 <div class="kaekung-brand">
     <div class="mascot-wrap">
         <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
@@ -316,7 +305,6 @@
     </div>
 </div>
 
-<!-- Firebase Status -->
 <div class="firebase-status">
     <div class="fb-row">
         <div class="dot" id="fbDot"></div>
@@ -328,7 +316,6 @@
     </div>
 </div>
 
-<!-- Main timer -->
 <div class="wrapper">
     <div class="label">COUNTDOWN</div>
     <div id="timer">05:00</div>
@@ -338,20 +325,17 @@
     <div class="status" id="statusLine">— READY —</div>
 </div>
 
-<!-- Clock -->
 <div class="current-clock">
     <div class="clock-label">เวลาปัจจุบัน</div>
     <div id="clockDisplay">00:00:00</div>
     <div class="clock-date" id="clockDate"></div>
 </div>
 
-<!-- Fullscreen button -->
 <button id="fsBtn" onclick="toggleFullscreen()" title="เต็มจอ">
   <svg id="fsIconExpand" viewBox="0 0 24 24"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
   <svg id="fsIconCollapse" viewBox="0 0 24 24" style="display:none"><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="10" y1="14" x2="3" y2="21"/><line x1="21" y1="3" x2="14" y2="10"/></svg>
 </button>
 
-<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -371,30 +355,48 @@ const WARNING_THRESHOLD  = 300;
 const CRITICAL_THRESHOLD = 120;
 const MAX_NEGATIVE_SEC   = 99 * 60;
 
-/* ── Timer state ทั้งหมดอยู่ใน object เดียว ── */
-const fb = {
-    timeLeft:    300,
-    updatedAt:   null,
-    running:     false,
-    defaultTime: 300,
+/* ── จัดกลุ่ม State ทั้งระบบไว้ใน Object เดียว (Clean Code) ── */
+const appState = {
+    timer: {
+        timeLeft: 300,
+        updatedAt: null,
+        running: false,
+        defaultTime: 300,
+        intervalId: null,
+        isListening: false
+    },
+    clock: {
+        cachedDateStr: ''
+    }
 };
-let _tickInterval   = null;
-let _stateListening = false;
 
-const timerEl    = document.getElementById('timer');
-const progressEl = document.getElementById('progressFill');
-const statusEl   = document.getElementById('statusLine');
-const glowBg     = document.getElementById('glowBg');
-const fbDot      = document.getElementById('fbDot');
-const fbLabel    = document.getElementById('fbLabel');
+/* ── Cache DOM Elements ── */
+const dom = {
+    timerEl: document.getElementById('timer'),
+    progressEl: document.getElementById('progressFill'),
+    statusEl: document.getElementById('statusLine'),
+    glowBg: document.getElementById('glowBg'),
+    fbDot: document.getElementById('fbDot'),
+    fbLabel: document.getElementById('fbLabel'),
+    loginEmail: document.getElementById('loginEmail'),
+    loginPassword: document.getElementById('loginPassword'),
+    loginErr: document.getElementById('loginErr'),
+    loginOverlay: document.getElementById('loginOverlay'),
+    userEmail: document.getElementById('userEmail'),
+    clockEl: document.getElementById('clockDisplay'),
+    dateEl: document.getElementById('clockDate'),
+    fsBtn: document.getElementById('fsBtn'),
+    fsIconExpand: document.getElementById('fsIconExpand'),
+    fsIconCollapse: document.getElementById('fsIconCollapse')
+};
 
 /* ── คำนวณ timeLeft ปัจจุบันจาก Firebase ── */
 function calcTimeLeft() {
-    if (fb.running && fb.updatedAt) {
-        const elapsed = Math.max(0, Math.floor((Date.now() - fb.updatedAt) / 1000));
-        return fb.timeLeft - elapsed;
+    if (appState.timer.running && appState.timer.updatedAt) {
+        const elapsed = Math.max(0, Math.floor((Date.now() - appState.timer.updatedAt) / 1000));
+        return appState.timer.timeLeft - elapsed;
     }
-    return fb.timeLeft;
+    return appState.timer.timeLeft;
 }
 
 function updateDisplay() {
@@ -404,43 +406,44 @@ function updateDisplay() {
     const hh      = Math.floor(absTime / 3600);
     const mm      = Math.floor((absTime % 3600) / 60).toString().padStart(2,'0');
     const ss      = (absTime % 60).toString().padStart(2,'0');
-    timerEl.textContent = hh > 0
+    
+    dom.timerEl.textContent = hh > 0
         ? (isNeg ? '-' : '') + hh + ':' + mm + ':' + ss
         : (isNeg ? '-' : '') + mm + ':' + ss;
 
-    timerEl.classList.remove('warning','critical');
+    dom.timerEl.classList.remove('warning','critical');
 
     if (timeLeft <= 0) {
-        timerEl.classList.add('critical');
-        glowBg.style.background     = 'rgb(255,32,32)';
-        glowBg.style.opacity        = '0.18';
-        progressEl.style.background = 'var(--clr-red)';
-        statusEl.textContent        = fb.running ? '— TIME OVER —' : '— STOPPED —';
-        statusEl.style.color        = 'rgba(255,80,80,0.5)';
+        dom.timerEl.classList.add('critical');
+        dom.glowBg.style.background     = 'rgb(255,32,32)';
+        dom.glowBg.style.opacity        = '0.18';
+        dom.progressEl.style.background = 'var(--clr-red)';
+        dom.statusEl.textContent        = appState.timer.running ? '— TIME OVER —' : '— STOPPED —';
+        dom.statusEl.style.color        = 'rgba(255,80,80,0.5)';
     } else if (timeLeft <= CRITICAL_THRESHOLD) {
-        timerEl.classList.add('critical');
-        glowBg.style.background     = 'rgb(255,32,32)';
-        glowBg.style.opacity        = '0.18';
-        progressEl.style.background = 'var(--clr-red)';
-        statusEl.textContent        = '— CRITICAL —';
-        statusEl.style.color        = 'rgba(255,80,80,0.5)';
+        dom.timerEl.classList.add('critical');
+        dom.glowBg.style.background     = 'rgb(255,32,32)';
+        dom.glowBg.style.opacity        = '0.18';
+        dom.progressEl.style.background = 'var(--clr-red)';
+        dom.statusEl.textContent        = '— CRITICAL —';
+        dom.statusEl.style.color        = 'rgba(255,80,80,0.5)';
     } else if (timeLeft <= WARNING_THRESHOLD) {
-        timerEl.classList.add('warning');
-        glowBg.style.background     = 'rgb(255,215,0)';
-        glowBg.style.opacity        = '0.15';
-        progressEl.style.background = 'var(--clr-yellow)';
-        statusEl.textContent        = '— WARNING —';
-        statusEl.style.color        = 'rgba(255,215,0,0.5)';
+        dom.timerEl.classList.add('warning');
+        dom.glowBg.style.background     = 'rgb(255,215,0)';
+        dom.glowBg.style.opacity        = '0.15';
+        dom.progressEl.style.background = 'var(--clr-yellow)';
+        dom.statusEl.textContent        = '— WARNING —';
+        dom.statusEl.style.color        = 'rgba(255,215,0,0.5)';
     } else {
-        glowBg.style.background     = 'rgb(240,240,240)';
-        glowBg.style.opacity        = '0.10';
-        progressEl.style.background = 'var(--clr-white)';
-        statusEl.textContent        = fb.running ? '— RUNNING —' : '— READY —';
-        statusEl.style.color        = 'rgba(255,255,255,0.18)';
+        dom.glowBg.style.background     = 'rgb(240,240,240)';
+        dom.glowBg.style.opacity        = '0.10';
+        dom.progressEl.style.background = 'var(--clr-white)';
+        dom.statusEl.textContent        = appState.timer.running ? '— RUNNING —' : '— READY —';
+        dom.statusEl.style.color        = 'rgba(255,255,255,0.18)';
     }
 
-    const ratio = Math.max(0, timeLeft / fb.defaultTime);
-    progressEl.style.transform = 'scaleX(' + ratio + ')';
+    const ratio = Math.max(0, timeLeft / appState.timer.defaultTime);
+    dom.progressEl.style.transform = 'scaleX(' + ratio + ')';
 }
 
 /* ── User-scoped timer path ── */
@@ -455,38 +458,38 @@ function timerStateRef() {
    อ่าน state จาก Firebase อย่างเดียว
    ════════════════════════════════════ */
 function attachStateListener() {
-    if (_stateListening) return;
+    if (appState.timer.isListening) return;
     const ref = timerStateRef();
     if (!ref) return;
-    _stateListening = true;
+    appState.timer.isListening = true;
 
     ref.on('value', function(snap) {
         const st = snap.val();
         if (!st) return;
 
-        if (typeof st.defaultTime === 'number' && st.defaultTime > 0) fb.defaultTime = st.defaultTime;
-        if (typeof st.timeLeft    === 'number')  fb.timeLeft  = st.timeLeft;
-        if (typeof st.updatedAt   === 'number')  fb.updatedAt = st.updatedAt;
-        if (typeof st.isRunning   === 'boolean') fb.running   = st.isRunning;
+        if (typeof st.defaultTime === 'number' && st.defaultTime > 0) appState.timer.defaultTime = st.defaultTime;
+        if (typeof st.timeLeft    === 'number')  appState.timer.timeLeft  = st.timeLeft;
+        if (typeof st.updatedAt   === 'number')  appState.timer.updatedAt = st.updatedAt;
+        if (typeof st.isRunning   === 'boolean') appState.timer.running   = st.isRunning;
 
         updateDisplay();
 
-        if (fb.running && !_tickInterval) {
+        if (appState.timer.running && !appState.timer.intervalId) {
             _startTick();
-        } else if (!fb.running && _tickInterval) {
-            clearInterval(_tickInterval);
-            _tickInterval = null;
+        } else if (!appState.timer.running && appState.timer.intervalId) {
+            clearInterval(appState.timer.intervalId);
+            appState.timer.intervalId = null;
         }
     });
 
-    if (fb.running) _startTick();
+    if (appState.timer.running) _startTick();
 }
 
 /* Smooth tick ทุก 250ms */
 function _startTick() {
-    if (_tickInterval) return;
-    _tickInterval = setInterval(function() {
-        if (!fb.running || !fb.updatedAt) return;
+    if (appState.timer.intervalId) return;
+    appState.timer.intervalId = setInterval(function() {
+        if (!appState.timer.running || !appState.timer.updatedAt) return;
         updateDisplay();
     }, 250);
 }
@@ -494,40 +497,50 @@ function _startTick() {
 function detachStateListener() {
     const ref = timerStateRef();
     if (ref) ref.off();
-    if (_tickInterval) { clearInterval(_tickInterval); _tickInterval = null; }
-    _stateListening  = false;
-    fb.running       = false;
-    fb.updatedAt     = null;
+    if (appState.timer.intervalId) { 
+        clearInterval(appState.timer.intervalId); 
+        appState.timer.intervalId = null; 
+    }
+    appState.timer.isListening = false;
+    appState.timer.running     = false;
+    appState.timer.updatedAt   = null;
 }
 
 /* ═══ AUTH ═══ */
 function loginEmail_pw() {
-    const email = (document.getElementById('loginEmail').value || '').trim();
-    const pass  = document.getElementById('loginPassword').value || '';
-    const errEl = document.getElementById('loginErr');
-    errEl.textContent = '';
-    if (!email || !pass) { errEl.textContent = 'กรุณากรอกอีเมลและรหัสผ่าน'; return; }
-    errEl.textContent = 'กำลังตรวจสอบ...';
+    const email = (dom.loginEmail.value || '').trim();
+    const pass  = dom.loginPassword.value || '';
+    dom.loginErr.textContent = '';
+    
+    if (!email || !pass) { 
+        dom.loginErr.textContent = 'กรุณากรอกอีเมลและรหัสผ่าน'; 
+        return; 
+    }
+    
+    dom.loginErr.textContent = 'กำลังตรวจสอบ...';
     firebase.auth().signInWithEmailAndPassword(email, pass).catch(function(e) {
-        const msg = e.code === 'auth/user-not-found'     ? 'ไม่พบบัญชีนี้'
-                : e.code === 'auth/wrong-password'     ? 'รหัสผ่านไม่ถูกต้อง'
-                : e.code === 'auth/invalid-email'      ? 'รูปแบบอีเมลไม่ถูกต้อง'
-                : e.code === 'auth/invalid-credential' ? 'Email หรือ Password ไม่ถูกต้อง'
-                : e.code === 'auth/too-many-requests'  ? 'ลองใหม่ภายหลัง'
-                : 'เข้าสู่ระบบไม่ได้: ' + e.message;
-        errEl.textContent = msg;
+        const msg = e.code === 'auth/user-not-found'      ? 'ไม่พบบัญชีนี้'
+                  : e.code === 'auth/wrong-password'      ? 'รหัสผ่านไม่ถูกต้อง'
+                  : e.code === 'auth/invalid-email'       ? 'รูปแบบอีเมลไม่ถูกต้อง'
+                  : e.code === 'auth/invalid-credential'  ? 'Email หรือ Password ไม่ถูกต้อง'
+                  : e.code === 'auth/too-many-requests'   ? 'ลองใหม่ภายหลัง'
+                  : 'เข้าสู่ระบบไม่ได้: ' + e.message;
+        dom.loginErr.textContent = msg;
     });
 }
+
 function doLogout() { firebase.auth().signOut(); }
 
 function showLogin() {
-    const ov = document.getElementById('loginOverlay');
-    ov.style.display = 'flex'; ov.style.opacity = '1'; ov.style.transition = '';
+    dom.loginOverlay.style.display = 'flex'; 
+    dom.loginOverlay.style.opacity = '1'; 
+    dom.loginOverlay.style.transition = '';
 }
+
 function hideLogin() {
-    const ov = document.getElementById('loginOverlay');
-    ov.style.transition = 'opacity 0.5s ease'; ov.style.opacity = '0';
-    setTimeout(function(){ ov.style.display = 'none'; }, 500);
+    dom.loginOverlay.style.transition = 'opacity 0.5s ease'; 
+    dom.loginOverlay.style.opacity = '0';
+    setTimeout(function(){ dom.loginOverlay.style.display = 'none'; }, 500);
 }
 
 /* ═══ FIREBASE INIT ═══ */
@@ -535,43 +548,53 @@ firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 
 database.ref('.info/connected').on('value', function(snap) {
-    if (snap.val()) { fbDot.className='dot connected'; fbLabel.textContent='LIVE'; }
-    else            { fbDot.className='dot error';     fbLabel.textContent='OFFLINE'; }
+    if (snap.val()) { 
+        dom.fbDot.className = 'dot connected'; 
+        dom.fbLabel.textContent = 'LIVE'; 
+    } else { 
+        dom.fbDot.className = 'dot error';     
+        dom.fbLabel.textContent = 'OFFLINE'; 
+    }
 });
 
 firebase.auth().onAuthStateChanged(function(user) {
     if (user) {
         hideLogin();
-        document.getElementById('userEmail').textContent = user.displayName || user.email;
+        dom.userEmail.textContent = user.displayName || user.email;
         attachStateListener();
     } else {
         showLogin();
-        document.getElementById('userEmail').textContent = '';
+        dom.userEmail.textContent = '';
         detachStateListener();
     }
 });
 
 /* ═══ CLOCK ═══ */
-const clockEl   = document.getElementById('clockDisplay');
-const dateEl    = document.getElementById('clockDate');
 const DAYS_TH   = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัส','ศุกร์','เสาร์'];
 const MONTHS_TH = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
 
 function updateClock() {
     const now = new Date();
-    clockEl.textContent = now.getHours().toString().padStart(2,'0') + ':' +
-                          now.getMinutes().toString().padStart(2,'0') + ':' +
-                          now.getSeconds().toString().padStart(2,'0');
-    dateEl.textContent  = DAYS_TH[now.getDay()] + ' ' + now.getDate() + ' ' +
-                          MONTHS_TH[now.getMonth()] + ' ' + (now.getFullYear()+543);
+    
+    dom.clockEl.textContent = now.getHours().toString().padStart(2,'0') + ':' +
+                              now.getMinutes().toString().padStart(2,'0') + ':' +
+                              now.getSeconds().toString().padStart(2,'0');
+                              
+    const newDateStr = DAYS_TH[now.getDay()] + ' ' + now.getDate() + ' ' +
+                       MONTHS_TH[now.getMonth()] + ' ' + (now.getFullYear() + 543);
+                       
+    // Optimize DOM: อัปเดตเฉพาะเมื่อวันที่เปลี่ยนเท่านั้น
+    if (appState.clock.cachedDateStr !== newDateStr) {
+        dom.dateEl.textContent = newDateStr;
+        appState.clock.cachedDateStr = newDateStr;
+    }
 }
+
 updateClock();
 setInterval(updateClock, 1000);
 updateDisplay();
 
 /* ═══ FULLSCREEN ═══ */
-const fsBtn = document.getElementById('fsBtn');
-
 function toggleFullscreen() {
     if (!document.fullscreenElement) {
         document.documentElement.requestFullscreen().catch(function(err) {
@@ -584,9 +607,9 @@ function toggleFullscreen() {
 
 document.addEventListener('fullscreenchange', function() {
     const isFs = !!document.fullscreenElement;
-    document.getElementById('fsIconExpand').style.display   = isFs ? 'none' : '';
-    document.getElementById('fsIconCollapse').style.display = isFs ? '' : 'none';
-    fsBtn.title = isFs ? 'ออกจากเต็มจอ' : 'เต็มจอ';
+    dom.fsIconExpand.style.display   = isFs ? 'none' : '';
+    dom.fsIconCollapse.style.display = isFs ? '' : 'none';
+    dom.fsBtn.title = isFs ? 'ออกจากเต็มจอ' : 'เต็มจอ';
 });
 </script>
 </body>
