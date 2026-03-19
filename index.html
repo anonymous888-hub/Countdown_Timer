@@ -48,6 +48,7 @@
             letter-spacing: 0.02em;
             transition: color 0.5s; -webkit-font-smoothing: antialiased;
             user-select: none;
+            font-variant-numeric: tabular-nums; /* ป้องกันตัวเลขกระโดด */
         }
         #timer.warning  { color: var(--clr-yellow); animation: pulse-y 1s ease-in-out infinite; }
         #timer.critical { color: var(--clr-red);    animation: pulse-r 0.6s ease-in-out infinite; }
@@ -99,21 +100,37 @@
             background: linear-gradient(90deg, #7ee8fa, #ff80ab);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
         }
+        
+        /* ═══ FIX: ป้องกันการกระโดดของนาฬิกาและวันที่ ═══ */
         .current-clock {
             position: fixed; bottom: 24px; left: 28px; z-index: 20;
             display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
-            font-family: 'Kanit', sans-serif; /* จัดฟอนต์ Kanit ให้ครอบคลุมส่วนนาฬิกา */
+            font-family: 'Kanit', sans-serif;
+            width: 230px; /* กำหนดความกว้างคงที่เพื่อป้องกันข้อความกระโดด */
         }
-        .clock-label { font-size: 10px; letter-spacing: 0.35em; color: rgba(255,255,255,0.2); text-transform: uppercase; }
+        .clock-label { 
+            font-size: 10px; 
+            letter-spacing: 0.35em; 
+            color: rgba(255,255,255,0.2); 
+            text-transform: uppercase; 
+        }
         #clockDisplay { 
             font-family: 'Bebas Neue', sans-serif; 
             font-size: 52px; 
             color: rgba(255,255,255,0.55); 
             letter-spacing: 0.06em; 
             line-height: 1; 
-            font-variant-numeric: tabular-nums; /* ป้องกันตัวเลขขยับเวลาเดิน */
+            font-variant-numeric: tabular-nums; /* ทำให้ตัวเลขมีความกว้างเท่ากัน */
         }
-        .clock-date { font-size: 11px; letter-spacing: 0.3em; color: rgba(255,255,255,0.18); }
+        .clock-date { 
+            font-size: 11px; 
+            letter-spacing: 0.3em; 
+            color: rgba(255,255,255,0.18);
+            /* FIX: แก้ไขการกระโดดของวันที่ */
+            font-variant-numeric: tabular-nums; /* ตัวเลขมีความกว้างเท่ากัน */
+            white-space: nowrap; /* ไม่ให้ข้อความตัดบรรทัด */
+            min-width: 200px; /* กำหนดความกว้างขั้นต่ำ */
+        }
 
         /* LOGIN OVERLAY */
         #loginOverlay {
@@ -187,11 +204,13 @@
             .mascot-wrap { width: 42px; height: 42px; }
             .brand-name { font-size: 14px; }
             #clockDisplay { font-size: 36px; }
+            .current-clock { width: 180px; } /* ปรับความกว้างสำหรับหน้าจอเล็ก */
         }
         @media (max-width: 768px) {
             body { padding: 60px 12px 90px; }
             #timer { font-size: clamp(80px, min(42vw, 46vh), 320px); }
             #clockDisplay { font-size: 28px; }
+            .current-clock { width: 160px; }
         }
         @media (max-height: 500px) {
             body { padding: 50px 20px 80px; }
@@ -355,7 +374,9 @@ const WARNING_THRESHOLD  = 300;
 const CRITICAL_THRESHOLD = 120;
 const MAX_NEGATIVE_SEC   = 99 * 60;
 
-/* ── จัดกลุ่ม State ทั้งระบบไว้ใน Object เดียว (Clean Code) ── */
+/* ══════════════════════════════════════════════════════════
+   จัดกลุ่ม State ทั้งระบบไว้ใน Object เดียว (Clean Code)
+   ══════════════════════════════════════════════════════════ */
 const appState = {
     timer: {
         timeLeft: 300,
@@ -366,11 +387,13 @@ const appState = {
         isListening: false
     },
     clock: {
-        cachedDateStr: ''
+        cachedDateStr: ''  // เก็บ cache เพื่อลด DOM updates
     }
 };
 
-/* ── Cache DOM Elements ── */
+/* ══════════════════════════════════════════════════════════
+   Cache DOM Elements (Performance Optimization)
+   ══════════════════════════════════════════════════════════ */
 const dom = {
     timerEl: document.getElementById('timer'),
     progressEl: document.getElementById('progressFill'),
@@ -390,7 +413,9 @@ const dom = {
     fsIconCollapse: document.getElementById('fsIconCollapse')
 };
 
-/* ── คำนวณ timeLeft ปัจจุบันจาก Firebase ── */
+/* ══════════════════════════════════════════════════════════
+   คำนวณ timeLeft ปัจจุบันจาก Firebase
+   ══════════════════════════════════════════════════════════ */
 function calcTimeLeft() {
     if (appState.timer.running && appState.timer.updatedAt) {
         const elapsed = Math.max(0, Math.floor((Date.now() - appState.timer.updatedAt) / 1000));
@@ -399,6 +424,9 @@ function calcTimeLeft() {
     return appState.timer.timeLeft;
 }
 
+/* ══════════════════════════════════════════════════════════
+   อัปเดตการแสดงผลหน้าจอ
+   ══════════════════════════════════════════════════════════ */
 function updateDisplay() {
     const timeLeft = calcTimeLeft();
     const isNeg   = timeLeft < 0;
@@ -407,12 +435,15 @@ function updateDisplay() {
     const mm      = Math.floor((absTime % 3600) / 60).toString().padStart(2,'0');
     const ss      = (absTime % 60).toString().padStart(2,'0');
     
+    // Format: HH:MM:SS หรือ MM:SS (ขึ้นกับว่ามีชั่วโมงหรือไม่)
     dom.timerEl.textContent = hh > 0
         ? (isNeg ? '-' : '') + hh + ':' + mm + ':' + ss
         : (isNeg ? '-' : '') + mm + ':' + ss;
 
+    // ล้าง class ก่อนเพิ่มใหม่
     dom.timerEl.classList.remove('warning','critical');
 
+    // กำหนดสถานะและสีตาม threshold
     if (timeLeft <= 0) {
         dom.timerEl.classList.add('critical');
         dom.glowBg.style.background     = 'rgb(255,32,32)';
@@ -442,21 +473,23 @@ function updateDisplay() {
         dom.statusEl.style.color        = 'rgba(255,255,255,0.18)';
     }
 
-    const ratio = Math.max(0, timeLeft / appState.timer.defaultTime);
+    // อัปเดต progress bar
+    const ratio = Math.max(0, Math.min(1, timeLeft / appState.timer.defaultTime));
     dom.progressEl.style.transform = 'scaleX(' + ratio + ')';
 }
 
-/* ── User-scoped timer path ── */
+/* ══════════════════════════════════════════════════════════
+   User-scoped timer path (Firebase Realtime Database)
+   ══════════════════════════════════════════════════════════ */
 function timerStateRef() {
     const user = firebase.auth().currentUser;
     if (!user) return null;
     return database.ref('users/' + user.uid + '/timer/state');
 }
 
-/* ════════════════════════════════════
-   attachStateListener
-   อ่าน state จาก Firebase อย่างเดียว
-   ════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════
+   ติดตั้ง Firebase Listener เพื่อรับ state จาก Database
+   ══════════════════════════════════════════════════════════ */
 function attachStateListener() {
     if (appState.timer.isListening) return;
     const ref = timerStateRef();
@@ -467,6 +500,7 @@ function attachStateListener() {
         const st = snap.val();
         if (!st) return;
 
+        // อัปเดต state จาก Firebase
         if (typeof st.defaultTime === 'number' && st.defaultTime > 0) appState.timer.defaultTime = st.defaultTime;
         if (typeof st.timeLeft    === 'number')  appState.timer.timeLeft  = st.timeLeft;
         if (typeof st.updatedAt   === 'number')  appState.timer.updatedAt = st.updatedAt;
@@ -474,6 +508,7 @@ function attachStateListener() {
 
         updateDisplay();
 
+        // เริ่ม/หยุด tick interval ตามสถานะ
         if (appState.timer.running && !appState.timer.intervalId) {
             _startTick();
         } else if (!appState.timer.running && appState.timer.intervalId) {
@@ -485,7 +520,9 @@ function attachStateListener() {
     if (appState.timer.running) _startTick();
 }
 
-/* Smooth tick ทุก 250ms */
+/* ══════════════════════════════════════════════════════════
+   Smooth tick ทุก 250ms (4 FPS) เพื่ออัปเดตการแสดงผลอย่างลื่นไหล
+   ══════════════════════════════════════════════════════════ */
 function _startTick() {
     if (appState.timer.intervalId) return;
     appState.timer.intervalId = setInterval(function() {
@@ -494,6 +531,9 @@ function _startTick() {
     }, 250);
 }
 
+/* ══════════════════════════════════════════════════════════
+   ปิด Firebase Listener และหยุด tick interval
+   ══════════════════════════════════════════════════════════ */
 function detachStateListener() {
     const ref = timerStateRef();
     if (ref) ref.off();
@@ -506,7 +546,9 @@ function detachStateListener() {
     appState.timer.updatedAt   = null;
 }
 
-/* ═══ AUTH ═══ */
+/* ══════════════════════════════════════════════════════════
+   ฟังก์ชัน Authentication
+   ══════════════════════════════════════════════════════════ */
 function loginEmail_pw() {
     const email = (dom.loginEmail.value || '').trim();
     const pass  = dom.loginPassword.value || '';
@@ -529,7 +571,9 @@ function loginEmail_pw() {
     });
 }
 
-function doLogout() { firebase.auth().signOut(); }
+function doLogout() { 
+    firebase.auth().signOut(); 
+}
 
 function showLogin() {
     dom.loginOverlay.style.display = 'flex'; 
@@ -543,10 +587,13 @@ function hideLogin() {
     setTimeout(function(){ dom.loginOverlay.style.display = 'none'; }, 500);
 }
 
-/* ═══ FIREBASE INIT ═══ */
+/* ══════════════════════════════════════════════════════════
+   Firebase Initialization
+   ══════════════════════════════════════════════════════════ */
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 
+// ตรวจสอบสถานะการเชื่อมต่อ
 database.ref('.info/connected').on('value', function(snap) {
     if (snap.val()) { 
         dom.fbDot.className = 'dot connected'; 
@@ -557,6 +604,7 @@ database.ref('.info/connected').on('value', function(snap) {
     }
 });
 
+// ตรวจสอบสถานะ Authentication
 firebase.auth().onAuthStateChanged(function(user) {
     if (user) {
         hideLogin();
@@ -569,19 +617,25 @@ firebase.auth().onAuthStateChanged(function(user) {
     }
 });
 
-/* ═══ CLOCK ═══ */
+/* ══════════════════════════════════════════════════════════
+   นาฬิกาและวันที่ (Current Time Display)
+   ══════════════════════════════════════════════════════════ */
 const DAYS_TH   = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัส','ศุกร์','เสาร์'];
 const MONTHS_TH = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
 
 function updateClock() {
     const now = new Date();
     
+    // อัปเดตเวลา (ทุกวินาที)
     dom.clockEl.textContent = now.getHours().toString().padStart(2,'0') + ':' +
                               now.getMinutes().toString().padStart(2,'0') + ':' +
                               now.getSeconds().toString().padStart(2,'0');
                               
-    const newDateStr = DAYS_TH[now.getDay()] + ' ' + now.getDate() + ' ' +
-                       MONTHS_TH[now.getMonth()] + ' ' + (now.getFullYear() + 543);
+    // สร้างข้อความวันที่
+    const newDateStr = DAYS_TH[now.getDay()] + ' ' + 
+                       now.getDate().toString().padStart(2, '0') + ' ' +
+                       MONTHS_TH[now.getMonth()] + ' ' + 
+                       (now.getFullYear() + 543);
                        
     // Optimize DOM: อัปเดตเฉพาะเมื่อวันที่เปลี่ยนเท่านั้น
     if (appState.clock.cachedDateStr !== newDateStr) {
@@ -590,11 +644,14 @@ function updateClock() {
     }
 }
 
+// เริ่มต้นนาฬิกา
 updateClock();
 setInterval(updateClock, 1000);
 updateDisplay();
 
-/* ═══ FULLSCREEN ═══ */
+/* ══════════════════════════════════════════════════════════
+   Fullscreen Toggle
+   ══════════════════════════════════════════════════════════ */
 function toggleFullscreen() {
     if (!document.fullscreenElement) {
         document.documentElement.requestFullscreen().catch(function(err) {
