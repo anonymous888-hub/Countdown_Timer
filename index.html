@@ -200,17 +200,51 @@
         }
         #fsBtn svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
 
+        /* ═══ เวลาพรีเซนต์รวม (Presenter Timer) — นับถอยหลังแยกอิสระจากตัวหลัก ═══
+           วางไว้บน-กึ่งกลางจอ (ระหว่าง brand ซ้าย กับ firebase-status ขวา)
+           เพื่อไม่ให้ตีกับตัวจับเวลาหลักที่อยู่กึ่งกลางจอแนวตั้ง ═══ */
+        .presenter-timer {
+            position: fixed; top: 20px; left: 50%;
+            transform: translateX(-50%);
+            z-index: 45;
+            display: flex; flex-direction: column; align-items: center; gap: 3px;
+            pointer-events: none;
+            padding: 6px 22px;
+            border: 1px solid rgba(255,128,171,0.18);
+            border-radius: 10px;
+            background: rgba(255,255,255,0.02);
+        }
+        .presenter-label {
+            font-size: 10px; letter-spacing: 0.35em; text-transform: uppercase;
+            color: rgba(255,128,171,0.55);
+            white-space: nowrap;
+        }
+        #presenterTime {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 36px; line-height: 1; letter-spacing: 0.04em;
+            color: var(--clr-pink);
+            font-variant-numeric: tabular-nums;
+            transition: color 0.4s;
+        }
+        #presenterTime.p-warning  { color: var(--clr-yellow); animation: pulse-y 1s ease-in-out infinite; }
+        #presenterTime.p-critical { color: var(--clr-red);    animation: pulse-r 0.6s ease-in-out infinite; }
+
         @media (max-width: 900px) {
             .mascot-wrap { width: 42px; height: 42px; }
             .brand-name { font-size: 14px; }
             #clockDisplay { font-size: 36px; }
             .current-clock { width: 180px; } /* ปรับความกว้างสำหรับหน้าจอเล็ก */
+            .presenter-timer { top: 14px; padding: 4px 14px; }
+            #presenterTime { font-size: 26px; }
+            .presenter-label { font-size: 8px; }
         }
         @media (max-width: 768px) {
             body { padding: 60px 12px 90px; }
             #timer { font-size: clamp(80px, min(42vw, 46vh), 320px); }
             #clockDisplay { font-size: 28px; }
             .current-clock { width: 160px; }
+            .presenter-timer { top: 10px; padding: 3px 10px; }
+            #presenterTime { font-size: 20px; }
         }
         @media (max-height: 500px) {
             body { padding: 50px 20px 80px; }
@@ -335,6 +369,11 @@
     </div>
 </div>
 
+<div class="presenter-timer" id="presenterTimer">
+    <div class="presenter-label">เวลาพรีเซนต์รวม</div>
+    <div id="presenterTime">00:00</div>
+</div>
+
 <div class="wrapper">
     <div class="label">COUNTDOWN</div>
     <div id="timer">05:00</div>
@@ -386,6 +425,15 @@ const appState = {
         intervalId: null,
         isListening: false
     },
+    // เวลาพรีเซนต์รวม — จับเวลาอิสระ แยกจาก timer หลักด้านบนโดยสิ้นเชิง
+    timer2: {
+        timeLeft: 0,
+        updatedAt: null,
+        running: false,
+        defaultTime: 0,
+        intervalId: null,
+        isListening: false
+    },
     clock: {
         cachedDateStr: ''  // เก็บ cache เพื่อลด DOM updates
     }
@@ -410,7 +458,8 @@ const dom = {
     dateEl: document.getElementById('clockDate'),
     fsBtn: document.getElementById('fsBtn'),
     fsIconExpand: document.getElementById('fsIconExpand'),
-    fsIconCollapse: document.getElementById('fsIconCollapse')
+    fsIconCollapse: document.getElementById('fsIconCollapse'),
+    presenterEl: document.getElementById('presenterTime')
 };
 
 /* ══════════════════════════════════════════════════════════
@@ -547,6 +596,95 @@ function detachStateListener() {
 }
 
 /* ══════════════════════════════════════════════════════════
+   เวลาพรีเซนต์รวม (Presenter Timer) — นับถอยหลังอิสระ
+   ใช้ path Firebase แยกต่างหาก (timer2) จึง start/pause/reset/
+   ติดลบ ได้เป็นอิสระโดยไม่กระทบตัวจับเวลาหลักด้านบนเลย
+   ══════════════════════════════════════════════════════════ */
+function timerStateRef2() {
+    const user = firebase.auth().currentUser;
+    if (!user) return null;
+    return database.ref('users/' + user.uid + '/timer2/state');
+}
+
+function calcTimeLeft2() {
+    if (appState.timer2.running && appState.timer2.updatedAt) {
+        const elapsed = Math.max(0, Math.floor((Date.now() - appState.timer2.updatedAt) / 1000));
+        return appState.timer2.timeLeft - elapsed;
+    }
+    return appState.timer2.timeLeft;
+}
+
+function updateDisplay2() {
+    const timeLeft = calcTimeLeft2();
+    const isNeg   = timeLeft < 0;
+    const absTime = Math.abs(timeLeft);
+    const hh      = Math.floor(absTime / 3600);
+    const mm      = Math.floor((absTime % 3600) / 60).toString().padStart(2,'0');
+    const ss      = (absTime % 60).toString().padStart(2,'0');
+
+    dom.presenterEl.textContent = hh > 0
+        ? (isNeg ? '-' : '') + hh + ':' + mm + ':' + ss
+        : (isNeg ? '-' : '') + mm + ':' + ss;
+
+    dom.presenterEl.classList.remove('p-warning','p-critical');
+    if (timeLeft <= 0) {
+        dom.presenterEl.classList.add('p-critical');
+    } else if (timeLeft <= CRITICAL_THRESHOLD) {
+        dom.presenterEl.classList.add('p-critical');
+    } else if (timeLeft <= WARNING_THRESHOLD) {
+        dom.presenterEl.classList.add('p-warning');
+    }
+}
+
+function attachStateListener2() {
+    if (appState.timer2.isListening) return;
+    const ref = timerStateRef2();
+    if (!ref) return;
+    appState.timer2.isListening = true;
+
+    ref.on('value', function(snap) {
+        const st = snap.val();
+        if (!st) { updateDisplay2(); return; }
+
+        if (typeof st.defaultTime === 'number' && st.defaultTime > 0) appState.timer2.defaultTime = st.defaultTime;
+        if (typeof st.timeLeft    === 'number')  appState.timer2.timeLeft  = st.timeLeft;
+        if (typeof st.updatedAt   === 'number')  appState.timer2.updatedAt = st.updatedAt;
+        if (typeof st.isRunning   === 'boolean') appState.timer2.running   = st.isRunning;
+
+        updateDisplay2();
+
+        if (appState.timer2.running && !appState.timer2.intervalId) {
+            _startTick2();
+        } else if (!appState.timer2.running && appState.timer2.intervalId) {
+            clearInterval(appState.timer2.intervalId);
+            appState.timer2.intervalId = null;
+        }
+    });
+
+    if (appState.timer2.running) _startTick2();
+}
+
+function _startTick2() {
+    if (appState.timer2.intervalId) return;
+    appState.timer2.intervalId = setInterval(function() {
+        if (!appState.timer2.running || !appState.timer2.updatedAt) return;
+        updateDisplay2();
+    }, 250);
+}
+
+function detachStateListener2() {
+    const ref = timerStateRef2();
+    if (ref) ref.off();
+    if (appState.timer2.intervalId) {
+        clearInterval(appState.timer2.intervalId);
+        appState.timer2.intervalId = null;
+    }
+    appState.timer2.isListening = false;
+    appState.timer2.running     = false;
+    appState.timer2.updatedAt   = null;
+}
+
+/* ══════════════════════════════════════════════════════════
    ฟังก์ชัน Authentication
    ══════════════════════════════════════════════════════════ */
 function loginEmail_pw() {
@@ -610,10 +748,12 @@ firebase.auth().onAuthStateChanged(function(user) {
         hideLogin();
         dom.userEmail.textContent = user.displayName || user.email;
         attachStateListener();
+        attachStateListener2();
     } else {
         showLogin();
         dom.userEmail.textContent = '';
         detachStateListener();
+        detachStateListener2();
     }
 });
 
@@ -648,6 +788,7 @@ function updateClock() {
 updateClock();
 setInterval(updateClock, 1000);
 updateDisplay();
+updateDisplay2();
 
 /* ══════════════════════════════════════════════════════════
    Fullscreen Toggle
