@@ -201,27 +201,26 @@
         #fsBtn svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
 
         /* ═══ เวลาพรีเซนต์รวม (Presenter Timer) — นับถอยหลังแยกอิสระจากตัวหลัก ═══
-           วางไว้บน-กึ่งกลางจอ (ระหว่าง brand ซ้าย กับ firebase-status ขวา)
-           เพื่อไม่ให้ตีกับตัวจับเวลาหลักที่อยู่กึ่งกลางจอแนวตั้ง ═══ */
+           วางไว้มุมขวาล่าง ซ้อนอยู่เหนือปุ่มเต็มจอเล็กน้อย
+           เพื่อไม่ให้ตีกับตัวจับเวลาหลักตรงกลางจอ หรือปุ่มเต็มจอมุมขวาล่างสุด ═══ */
         .presenter-timer {
-            position: fixed; top: 20px; left: 50%;
-            transform: translateX(-50%);
+            position: fixed; bottom: 92px; right: 24px;
             z-index: 45;
-            display: flex; flex-direction: column; align-items: center; gap: 3px;
+            display: flex; flex-direction: column; align-items: flex-end; gap: 4px;
             pointer-events: none;
-            padding: 6px 22px;
+            padding: 10px 26px;
             border: 1px solid rgba(255,128,171,0.18);
-            border-radius: 10px;
+            border-radius: 12px;
             background: rgba(255,255,255,0.02);
         }
         .presenter-label {
-            font-size: 10px; letter-spacing: 0.35em; text-transform: uppercase;
+            font-size: 11px; letter-spacing: 0.35em; text-transform: uppercase;
             color: rgba(255,128,171,0.55);
             white-space: nowrap;
         }
         #presenterTime {
             font-family: 'Bebas Neue', sans-serif;
-            font-size: 36px; line-height: 1; letter-spacing: 0.04em;
+            font-size: 60px; line-height: 1; letter-spacing: 0.04em;
             color: var(--clr-pink);
             font-variant-numeric: tabular-nums;
             transition: color 0.4s;
@@ -234,17 +233,17 @@
             .brand-name { font-size: 14px; }
             #clockDisplay { font-size: 36px; }
             .current-clock { width: 180px; } /* ปรับความกว้างสำหรับหน้าจอเล็ก */
-            .presenter-timer { top: 14px; padding: 4px 14px; }
-            #presenterTime { font-size: 26px; }
-            .presenter-label { font-size: 8px; }
+            .presenter-timer { bottom: 82px; right: 20px; padding: 8px 18px; }
+            #presenterTime { font-size: 44px; }
+            .presenter-label { font-size: 9px; }
         }
         @media (max-width: 768px) {
             body { padding: 60px 12px 90px; }
             #timer { font-size: clamp(80px, min(42vw, 46vh), 320px); }
             #clockDisplay { font-size: 28px; }
             .current-clock { width: 160px; }
-            .presenter-timer { top: 10px; padding: 3px 10px; }
-            #presenterTime { font-size: 20px; }
+            .presenter-timer { bottom: 80px; right: 14px; padding: 6px 14px; }
+            #presenterTime { font-size: 34px; }
         }
         @media (max-height: 500px) {
             body { padding: 50px 20px 80px; }
