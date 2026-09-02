@@ -202,25 +202,29 @@
 
         /* ═══ เวลาพรีเซนต์รวม (Presenter Timer) — นับถอยหลังแยกอิสระจากตัวหลัก ═══
            วางไว้มุมขวาล่าง ซ้อนอยู่เหนือปุ่มเต็มจอ
-           เพื่อไม่ให้ตีกับตัวจับเวลาหลักตรงกลางจอ หรือปุ่มเต็มจอมุมขวาล่างสุด ═══ */
+           ขนาด/ตำแหน่งคำนวณตามสัดส่วนจอ (คล้าย #timer หลัก) เพื่อไม่ให้ไปชน
+           กับตัวจับเวลาหลักเวลาเปิดบนจอที่เตี้ยหรือแคบ เช่น iPad/หน้าต่างฝังในแอปอื่น ═══ */
         .presenter-timer {
-            position: fixed; bottom: 100px; right: 24px;
+            position: fixed;
+            bottom: clamp(76px, 9vh, 100px);
+            right: clamp(14px, 2vw, 24px);
             z-index: 45;
             display: flex; flex-direction: column; align-items: center; gap: 6px;
             pointer-events: none;
-            padding: 14px 34px;
+            padding: clamp(8px, 1.2vh, 14px) clamp(16px, 3vw, 34px);
             border: 1px solid rgba(255,128,171,0.18);
             border-radius: 14px;
             background: rgba(255,255,255,0.02);
         }
         .presenter-label {
-            font-size: 13px; letter-spacing: 0.35em; text-transform: uppercase;
+            font-size: clamp(9px, 0.9vw, 13px); letter-spacing: 0.35em; text-transform: uppercase;
             color: rgba(255,128,171,0.55);
             white-space: nowrap;
         }
         #presenterTime {
             font-family: 'Bebas Neue', sans-serif;
-            font-size: 180px; line-height: 1; letter-spacing: 0.02em;
+            font-size: clamp(44px, min(7vw, 14vh), 180px);
+            line-height: 1; letter-spacing: 0.02em;
             color: var(--clr-pink);
             font-variant-numeric: tabular-nums;
             transition: color 0.4s;
@@ -233,18 +237,12 @@
             .brand-name { font-size: 14px; }
             #clockDisplay { font-size: 36px; }
             .current-clock { width: 180px; } /* ปรับความกว้างสำหรับหน้าจอเล็ก */
-            .presenter-timer { bottom: 90px; right: 20px; padding: 10px 22px; }
-            #presenterTime { font-size: 110px; }
-            .presenter-label { font-size: 11px; }
         }
         @media (max-width: 768px) {
             body { padding: 60px 12px 90px; }
             #timer { font-size: clamp(80px, min(42vw, 46vh), 320px); }
             #clockDisplay { font-size: 28px; }
             .current-clock { width: 160px; }
-            .presenter-timer { bottom: 84px; right: 14px; padding: 8px 16px; }
-            #presenterTime { font-size: 80px; }
-            .presenter-label { font-size: 10px; }
         }
         @media (max-height: 500px) {
             body { padding: 50px 20px 80px; }
